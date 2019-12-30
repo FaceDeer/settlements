@@ -56,7 +56,7 @@ schem_path = settlements.modpath.."/schematics/"
 -- list of schematics
 --
 schematic_table = { 
-  {name = "townhall", mts = schem_path.."townhall.mts", hwidth = 10, hdepth = 11, hheight = 12, hsize = 15, max_num = 0, rplc = "n"},
+  {name = "townhall", mts = schem_path.."kingsmarket.mts", hwidth = 11, hdepth = 11, hheight = 10, hsize = 15, max_num = 0, rplc = "n"},
   {name = "well", mts = schem_path.."well.mts", hwidth = 5, hdepth = 5, hheight = 13, hsize = 11, max_num = 0.045, rplc = "n"},
   {name = "hut", mts = schem_path.."hut.mts", hwidth = 7, hdepth = 7, hheight = 13, hsize = 11, max_num = 0.9, rplc = "y"},
   {name = "garden", mts = schem_path.."garden.mts", hwidth = 7, hdepth = 7, hheight = 13, hsize = 11, max_num = 0.1, rplc = "n"},
