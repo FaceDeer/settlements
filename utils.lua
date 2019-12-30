@@ -314,7 +314,8 @@ function settlements.initialize_nodes()
           local node = minetest.get_node(ptemp) 
           if node.name == "default:furnace" or
           node.name == "default:chest" or
-          node.name == "default:bookshelf"
+          node.name == "default:bookshelf" or
+		  node.name == "vessels:shelf"
           then
             minetest.registered_nodes[node.name].on_construct(ptemp)
           end
