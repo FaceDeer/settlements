@@ -17,49 +17,67 @@ function settlements.round(num, numDecimalPlaces)
 	return math.floor(num * mult + 0.5) / mult
 end
 
+local surface_mat = {
+	[c_dirt_with_grass] = true,
+	[c_dirt_with_snow] = true,
+	[c_dirt_with_dry_grass] = true,
+	[c_dirt_with_coniferous_litter] = true,
+	[c_sand] = true,
+	[c_desert_sand] = true,
+	[c_silver_sand] = true,
+}
+
+local buildable_to_set
+local buildable_to = function(c_node)
+	if buildable_to_set then return buildable_to_set[c_node] end
+	buildable_to_set = {}
+	for k, v in pairs(minetest.registered_nodes) do
+		if v.buildable_to then
+			buildable_to_set[minetest.get_content_id(k)] = true
+		end
+	end
+	return buildable_to_set[c_node]
+end
+
+
 -------------------------------------------------------------------------------
 -- function to find surface block y coordinate
 -------------------------------------------------------------------------------
--- TODO this version appears to have been only partly implemented, work needs to be done here to bring it up to spec
 function settlements.find_surface_lvm(pos, data, va)
-	local p6 = vector.new(pos)
-	local surface_mat = {
-		c_dirt_with_grass,						
-		c_dirt_with_snow ,						
-		c_dirt_with_dry_grass,				
-		c_dirt_with_coniferous_litter,
-		c_sand,											 
-		c_desert_sand,
-		c_silver_sand
-	}
-	local cnt = 0
-	local itter -- count up or down
-	local cnt_max = 200
+	if not va:containsp(pos) then return nil end
+	
 	-- starting point for looking for surface
-	local vi = va:index(p6.x, p6.y, p6.z)
-	if data[vi] == nil then return nil end
-	local tmp = minetest.get_name_from_content_id(data[vi])
-	if data[vi] == c_air then
-		itter = -1
+	local previous_vi = va:indexp(pos)
+	local previous_node = data[previous_vi]
+	local itter -- count up or down
+	if buildable_to(previous_node) then
+		itter = -1 -- going down
 	else
-		itter = 1
+		itter = 1 -- going up
 	end
-	while cnt < cnt_max do
-		cnt = cnt+1
-		local vi = va:index(p6.x, p6.y, p6.z)
-		for i, mats in ipairs(surface_mat) do
-			local node_check = va:index(p6.x, p6.y+1, p6.z)
-			if node_check and vi and data[vi] == mats and 
-			(data[node_check] ~= c_water_source and
-				data[node_check] ~= c_water_flowing
-			) 
-			then 
-				local tmp = minetest.get_name_from_content_id(data[node_check])
-				return p6, mats
+	for cnt = 0, 200 do
+		local next_vi = previous_vi + va.ystride * itter
+		if not va:containsi(next_vi) then return nil end
+		local next_node = data[next_vi]
+		if buildable_to(previous_node) ~= buildable_to(next_node) then
+			--we transitioned through what may be a surface. Test if it was the right material.
+			local above_node, below_node, above_vi, below_vi
+			if itter > 0 then
+				-- going up
+				above_node, below_node = next_node, previous_node
+				above_vi, below_vi = next_vi, previous_vi
+			else
+				above_node, below_node = previous_node, next_node
+				above_vi, below_vi = previous_vi, next_vi
+			end
+			if above_node ~= c_water_source and above_node ~= c_water_flowing and surface_mat[below_node] then
+				return va:position(below_vi), below_node
+			else
+				return nil
 			end
 		end
-		p6.y = p6.y + itter
-		if p6.y < 0 then return nil end
+		previous_vi = next_vi
+		previous_node = next_node
 	end
 	return nil
 end
