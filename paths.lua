@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- generate paths between buildings
 -------------------------------------------------------------------------------
-function settlements.paths_lvm(minp, data, va, settlement_info)
+function settlements.paths(minp, data, va, settlement_info)
 	local c_gravel = minetest.get_content_id("default:gravel")
 	local starting_point
 	local end_point
@@ -68,7 +68,7 @@ function settlements.paths_lvm(minp, data, va, settlement_info)
 					distance = dist_east_p_to_end
 				end
 				-- find surface of new starting point
-				local surface_point, surface_mat = settlements.find_surface_lvm(starting_point, data, va)
+				local surface_point, surface_mat = settlements.find_surface(starting_point, data, va)
 				-- replace surface node with default:gravel 
 				if surface_point
 				then

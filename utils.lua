@@ -43,7 +43,7 @@ end
 -------------------------------------------------------------------------------
 -- function to find surface block y coordinate
 -------------------------------------------------------------------------------
-function settlements.find_surface_lvm(pos, data, va)
+function settlements.find_surface(pos, data, va)
 	if not va:containsp(pos) then return nil end
 	
 	-- starting point for looking for surface

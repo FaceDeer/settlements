@@ -9,58 +9,6 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
 -------------------------------------------------------------------------------
--- build schematic, replace material, rotation
--------------------------------------------------------------------------------
-function settlements.build_schematic(vm, data, va, pos, building, replace_wall, name)
-	-- get building node material for better integration to surrounding
-	local platform_material =	minetest.get_node_or_nil(pos)
-	if not platform_material then
-		return
-	end
-	platform_material = platform_material.name
-	-- pick random material
-	local material = wallmaterial[math.random(1,#wallmaterial)]
-	-- schematic conversion to lua
-	local schem_lua = minetest.serialize_schematic(building, 
-		"lua", 
-		{lua_use_comments = false, lua_num_indent_spaces = 0}).." return(schematic)"
-	-- replace material
-	if replace_wall == "y" then
-		schem_lua = schem_lua:gsub("default:cobble", material)
-	end
-	schem_lua = schem_lua:gsub("default:dirt_with_grass", 
-		platform_material)
-	-- special material for spawning npcs
-	schem_lua = schem_lua:gsub("default:junglewood", 
-		"settlements:junglewood")
-	-- format schematic string
-	local schematic = loadstring(schem_lua)()
-	-- build foundation for the building an make room above
-	local width = schematic["size"]["x"]
-	local depth = schematic["size"]["z"]
-	local height = schematic["size"]["y"]
-	local possible_rotations = {"0", "90", "180", "270"}
-	local rotation = possible_rotations[ math.random( #possible_rotations ) ]
-	settlements.foundation(
-		pos, 
-		width, 
-		depth, 
-		height, 
-		rotation)
-	vm:set_data(data)
-	-- place schematic
-
-	minetest.place_schematic_on_vmanip(
-		vm, 
-		pos, 
-		schematic, 
-		rotation, 
-		nil, 
-		true)
-	vm:write_to_map(true)
-end
-
--------------------------------------------------------------------------------
 -- initialize settlement_info 
 -------------------------------------------------------------------------------
 local function initialize_settlement_info()
@@ -89,17 +37,17 @@ local function pick_next_building(pos_surface, count_buildings, settlement_info)
 	local size = #randomized_schematic_table
 	for i = size, 1, -1 do
 		-- already enough buildings of that type?
-		if count_buildings[randomized_schematic_table[i]["name"]] < randomized_schematic_table[i]["max_num"]*number_of_buildings		then
-			building_all_info = randomized_schematic_table[i]
+		local current_schematic = randomized_schematic_table[i]
+		if count_buildings[current_schematic.name] < current_schematic.max_num*number_of_buildings then
+			building_all_info = current_schematic
 			-- check distance to other buildings
 			local distance_to_other_buildings_ok = settlements.check_distance(pos_surface, 
-				building_all_info["hsize"],
+				building_all_info.hsize,
 				settlement_info)
-			if distance_to_other_buildings_ok 
-			then
+			if distance_to_other_buildings_ok then
 				-- count built houses
-				count_buildings[building_all_info["name"]] = count_buildings[building_all_info["name"]] +1
-				return building_all_info["mts"]
+				count_buildings[building_all_info.name] = count_buildings[building_all_info.name] +1
+				return building_all_info.schematic
 			end
 		end
 	end
@@ -120,7 +68,7 @@ end
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
-function settlements.create_site_plan_lvm(maxp, minp, data, va)
+function settlements.create_site_plan(maxp, minp, data, va)
 	local possible_rotations = {"0", "90", "180", "270"}
 	-- find center of chunk
 	local center = {
@@ -129,7 +77,7 @@ function settlements.create_site_plan_lvm(maxp, minp, data, va)
 		z=maxp.z-half_map_chunk_size
 	} 
 	-- find center_surface of chunk
-	local center_surface, surface_material = settlements.find_surface_lvm(center, data, va)
+	local center_surface, surface_material = settlements.find_surface(center, data, va)
 	-- go build settlement around center
 	if not center_surface then
 		return nil
@@ -171,7 +119,7 @@ function settlements.create_site_plan_lvm(maxp, minp, data, va)
 				ptz = settlements.round(ptz, 0)
 				local pos1 = { x=ptx, y=center_surface.y+50, z=ptz}
 				--
-				local pos_surface, surface_material = settlements.find_surface_lvm(pos1, data, va)
+				local pos_surface, surface_material = settlements.find_surface(pos1, data, va)
 				if pos_surface 
 				then
 					if pick_next_building(pos_surface, count_buildings, settlement_info) 
@@ -208,46 +156,32 @@ end
 -------------------------------------------------------------------------------
 -- evaluate settlement_info and place schematics
 -------------------------------------------------------------------------------
-function settlements.place_schematics_lvm(vm, settlement_info)
+function settlements.place_schematics(vm, settlement_info)
 	for i, built_house in ipairs(settlement_info) do
 		-- TODO better schematic lookup
 		for j, schem in ipairs(schematic_table) do
-			if settlement_info[i]["name"] == schem["name"]
+			if settlement_info[i].name == schem.name
 			then
 				building_all_info = schem
 				break
 			end
 		end
 
-		local pos = settlement_info[i]["pos"] 
-		local rotation = settlement_info[i]["rotat"] 
+		local pos = settlement_info[i].pos
+		local rotation = settlement_info[i].rotat
 		-- get building node material for better integration to surrounding
-		local platform_material =	settlement_info[i]["surface_mat"] 
-		platform_material_name = minetest.get_name_from_content_id(platform_material)
-		-- pick random material
-		local material = wallmaterial[math.random(1,#wallmaterial)]
-		--
-		local building = building_all_info["mts"]
-		local replace_wall = building_all_info["rplc"]
+		local platform_material = settlement_info[i].surface_mat
+		local platform_material_name = minetest.get_name_from_content_id(platform_material)
+
+		local building_schematic = building_all_info.schematic
 		
-		-- TODO proper schematic replacements
-		-- schematic conversion to lua
-		local schem_lua = minetest.serialize_schematic(building, 
-			"lua", 
-			{lua_use_comments = false, lua_num_indent_spaces = 0}).." return(schematic)"
-		-- replace material
-		if replace_wall == "y" then
-			schem_lua = schem_lua:gsub("default:cobble", material)
+		local replacements = {}
+		
+		if building_all_info.replace_wall then
+			replacements["default:cobble"] = wallmaterial[math.random(1,#wallmaterial)]
 		end
-		schem_lua = schem_lua:gsub("default:dirt_with_grass", 
-			platform_material_name)
-		-- special material for spawning npcs
-		schem_lua = schem_lua:gsub("default:junglewood", 
-			"settlements:junglewood")
-		-- format schematic string
-		local schematic = loadstring(schem_lua)()
-		-- build foundation for the building an make room above
-		-- place schematic
+		replacements["default:dirt_with_grass"] = platform_material_name
+		replacements["default:junglewood"] = "settlements:junglewood"
 
 		if settlements.debug then
 			minetest.chat_send_all("building " .. settlement_info[i]["name"] .. " at " .. minetest.pos_to_string(pos))
@@ -255,9 +189,9 @@ function settlements.place_schematics_lvm(vm, settlement_info)
 		minetest.place_schematic_on_vmanip(
 			vm, 
 			pos, 
-			schematic, 
+			building_schematic, 
 			rotation, 
-			nil, 
+			replacements,
 			true)
 
 	end

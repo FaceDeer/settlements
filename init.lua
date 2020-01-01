@@ -72,7 +72,7 @@ local generate_settlement = function(minp, maxp)
 	}
 	local data = vm:get_data()
 	
-	local settlement_info = settlements.create_site_plan_lvm(maxp, minp, data, va)
+	local settlement_info = settlements.create_site_plan(maxp, minp, data, va)
 	if not settlement_info
 	then
 		return
@@ -80,17 +80,17 @@ local generate_settlement = function(minp, maxp)
 	--
 	-- evaluate settlement_info and prepare terrain
 	--
-	settlements.terraform_lvm(data, va, settlement_info)
+	settlements.terraform(data, va, settlement_info)
 
 	--
 	-- evaluate settlement_info and build paths between buildings
 	--
-	settlements.paths_lvm(minp, data, va, settlement_info)
+	settlements.paths(minp, data, va, settlement_info)
 	--
 	-- evaluate settlement_info and place schematics
 	--
 	vm:set_data(data)
-	settlements.place_schematics_lvm(vm, settlement_info)
+	settlements.place_schematics(vm, settlement_info)
 	vm:write_to_map(true)
 	--
 	-- evaluate settlement_info and initialize furnaces and chests

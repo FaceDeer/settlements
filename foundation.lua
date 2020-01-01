@@ -3,7 +3,7 @@ local schematic_table = settlements.schematic_table
 -------------------------------------------------------------------------------
 -- function to fill empty space below baseplate when building on a hill
 -------------------------------------------------------------------------------
-local function ground_lvm(pos, data, va) -- role model: Wendelsteinkircherl, Brannenburg
+local function ground(pos, data, va) -- role model: Wendelsteinkircherl, Brannenburg
 	local c_dirt = minetest.get_content_id("default:dirt")
 	local c_stone = minetest.get_content_id("default:stone")
 	--
@@ -24,7 +24,7 @@ end
 -------------------------------------------------------------------------------
 -- function clear space above baseplate 
 -------------------------------------------------------------------------------
-function settlements.terraform_lvm(data, va, settlement_info)
+function settlements.terraform(data, va, settlement_info)
 	local c_air = minetest.get_content_id("air")
 	local fheight
 	local fwidth
@@ -57,7 +57,7 @@ function settlements.terraform_lvm(data, va, settlement_info)
 				for xi = 0,fwidth-1 do
 					if yi == 0 then
 						local p = {x=pos.x+xi, y=pos.y, z=pos.z+zi}
-						ground_lvm(p, data, va)
+						ground(p, data, va)
 					else
 						-- write ground
 						local vi = va:index(pos.x+xi, pos.y+yi, pos.z+zi)
