@@ -3,6 +3,18 @@ local n2 = {name="default:dirt_with_grass"}
 local n3 = {name="default:cobble"}
 local n4 = {name="default:junglewood"}
 local n5 = {name="default:stone_block"}
+local n6 = {name="walls:cobble"}
+local n7 = {name="stairs:slab_cobble", param2=1}
+local n8 = {name="default:water_source"}
+local n9 = {name="stairs:stair_wood", param2=1}
+local n10 = {name="stairs:stair_wood", param2=3}
+local n11 = {name="stairs:stair_junglewood", param2=20}
+local n12 = {name="default:tree", param2=1}
+local n13 = {name="default:tree"}
+local n14 = {name="default:tree", param2=12}
+local n15 = {name="xpanes:pane_flat"}
+local n16 = {name="default:tree", param2=3}
+local n17 = {name="default:tree", param2=20}
 
 schematic = {
 	size = {x=11, y=10, z=11},
@@ -162,7 +174,7 @@ schematic = {
 		n3,
 		n3,
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=1, y=2
@@ -175,7 +187,7 @@ schematic = {
 		n3,
 		{name="xpanes:pane_flat", param2=2},
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=1, y=3
@@ -188,7 +200,7 @@ schematic = {
 		n3,
 		n3,
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=1, y=4
@@ -222,9 +234,9 @@ schematic = {
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
-		{name="xpanes:pane_flat"},
-		{name="stairs:stair_wood", param2=3},
+		n9,
+		n15,
+		n10,
 		n1,
 		n1,
 		n1,
@@ -765,16 +777,16 @@ schematic = {
 
 		-- z=5, y=8
 		{name="default:tree", param2=18},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
-		{name="default:tree", param2=12},
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
+		n14,
 
 		-- z=5, y=9
 		{name="stairs:slab_wood"},
@@ -884,11 +896,11 @@ schematic = {
 		n1,
 		n3,
 		n1,
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		n3,
 		n1,
@@ -1001,11 +1013,11 @@ schematic = {
 		n1,
 		n3,
 		n1,
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		n3,
 		n1,
@@ -1118,11 +1130,11 @@ schematic = {
 		n1,
 		n3,
 		n1,
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		{name="default:fence_junglewood"},
 		{name="default:chest"},
-		{name="stairs:stair_junglewood", param2=20},
+		n11,
 		n1,
 		n3,
 		n1,
@@ -1194,7 +1206,7 @@ schematic = {
 
 		-- z=9, y=1
 		n1,
-		{name="default:tree", param2=1},
+		n12,
 		n3,
 		n3,
 		n3,
@@ -1202,12 +1214,12 @@ schematic = {
 		n3,
 		n3,
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=9, y=2
 		n1,
-		{name="default:tree", param2=1},
+		n12,
 		n3,
 		{name="xpanes:pane_flat", param2=2},
 		n3,
@@ -1215,12 +1227,12 @@ schematic = {
 		n3,
 		{name="xpanes:pane_flat", param2=2},
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=9, y=3
 		n1,
-		{name="default:tree", param2=1},
+		n12,
 		n3,
 		n3,
 		n3,
@@ -1228,7 +1240,7 @@ schematic = {
 		n3,
 		n3,
 		n3,
-		{name="default:tree", param2=1},
+		n12,
 		n1,
 
 		-- z=9, y=4
@@ -1262,9 +1274,9 @@ schematic = {
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		{name="xpanes:pane_flat", param2=2},
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 		n1,

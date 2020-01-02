@@ -3,6 +3,18 @@ local n2 = {name="default:dirt_with_grass"}
 local n3 = {name="default:cobble"}
 local n4 = {name="default:junglewood"}
 local n5 = {name="default:stone_block"}
+local n6 = {name="walls:cobble"}
+local n7 = {name="stairs:slab_cobble", param2=1}
+local n8 = {name="default:water_source"}
+local n9 = {name="stairs:stair_wood", param2=1}
+local n10 = {name="stairs:stair_wood", param2=3}
+local n11 = {name="stairs:stair_junglewood", param2=20}
+local n12 = {name="default:tree", param2=1}
+local n13 = {name="default:tree"}
+local n14 = {name="default:tree", param2=12}
+local n15 = {name="xpanes:pane_flat"}
+local n16 = {name="default:tree", param2=3}
+local n17 = {name="default:tree", param2=20}
 
 schematic = {
 	size = {x=7, y=3, z=7},
@@ -46,13 +58,13 @@ schematic = {
 		{name="default:dirt"},
 
 		-- z=1, y=1
-		{name="default:tree"},
-		{name="default:tree"},
-		{name="default:tree"},
-		{name="default:tree"},
-		{name="default:tree", param2=1},
-		{name="default:tree"},
-		{name="default:tree"},
+		n13,
+		n13,
+		n13,
+		n13,
+		n12,
+		n13,
+		n13,
 
 		-- z=1, y=2
 		n1,
@@ -73,13 +85,13 @@ schematic = {
 		{name="default:dirt"},
 
 		-- z=2, y=1
-		{name="default:tree"},
+		n13,
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
-		{name="default:tree"},
+		n13,
 
 		-- z=2, y=2
 		n1,
@@ -100,13 +112,13 @@ schematic = {
 		{name="default:dirt"},
 
 		-- z=3, y=1
-		{name="default:tree"},
+		n13,
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
-		{name="default:water_source"},
+		n8,
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
-		{name="default:tree"},
+		n13,
 
 		-- z=3, y=2
 		n1,
@@ -127,13 +139,13 @@ schematic = {
 		{name="default:dirt"},
 
 		-- z=4, y=1
-		{name="default:tree"},
+		n13,
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
 		{name="farming:soil_wet"},
-		{name="default:tree"},
+		n13,
 
 		-- z=4, y=2
 		n1,
@@ -154,13 +166,13 @@ schematic = {
 		{name="default:dirt"},
 
 		-- z=5, y=1
-		{name="default:tree", param2=1},
-		{name="default:tree", param2=1},
-		{name="default:tree", param2=1},
-		{name="default:tree", param2=1},
-		{name="default:tree"},
-		{name="default:tree"},
-		{name="default:tree"},
+		n12,
+		n12,
+		n12,
+		n12,
+		n13,
+		n13,
+		n13,
 
 		-- z=5, y=2
 		n1,

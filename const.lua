@@ -23,19 +23,7 @@ function settlements.mts_save()
 	print("Wrote: " .. filename)
 end
 
---
--- switch for debugging
---
-settlements.debug = false
---
--- timer between creation of two settlements
---
-settlements.last_settlement = os.time()
-settlements.min_timer = 20
---
---
 -- material to replace cobblestone with
---
 settlements.wallmaterial = {
 	"default:junglewood", 
 	"default:pine_wood", 
@@ -55,9 +43,7 @@ function Set (list)
 	return set
 end
 
---
 -- possible surfaces where buildings can be built
---
 settlements.surface_mat = Set({
 	"default:dirt_with_grass",
 	"default:dry_dirt_with_grass",
@@ -136,22 +122,5 @@ settlements.schematic_table = {
 		replace_wall = false
 	},
 }
-
---
--- list of settlements, load on server start up
---
-settlements.settlements_in_world = {}
---
--- min_distance between settlements
---
-settlements.min_dist_settlements = 500
-if settlements.debug == true 
-then
-	settlements.min_dist_settlements = 200
-end
---
--- maximum allowed difference in height for building a sttlement
---
-settlements.max_height_difference = 10
 
 settlements.half_map_chunk_size = 40

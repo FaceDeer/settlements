@@ -3,6 +3,18 @@ local n2 = {name="default:dirt_with_grass"}
 local n3 = {name="default:cobble"}
 local n4 = {name="default:junglewood"}
 local n5 = {name="default:stone_block"}
+local n6 = {name="walls:cobble"}
+local n7 = {name="stairs:slab_cobble", param2=1}
+local n8 = {name="default:water_source"}
+local n9 = {name="stairs:stair_wood", param2=1}
+local n10 = {name="stairs:stair_wood", param2=3}
+local n11 = {name="stairs:stair_junglewood", param2=20}
+local n12 = {name="default:tree", param2=1}
+local n13 = {name="default:tree"}
+local n14 = {name="default:tree", param2=12}
+local n15 = {name="xpanes:pane_flat"}
+local n16 = {name="default:tree", param2=3}
+local n17 = {name="default:tree", param2=20}
 
 schematic = {
 	size = {x=7, y=13, z=10},
@@ -55,29 +67,29 @@ schematic = {
 		n1,
 
 		-- z=0, y=5
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=0, y=6
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=0, y=7
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		{name="stairs:slab_wood", param2=20},
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 
@@ -172,29 +184,29 @@ schematic = {
 		n1,
 
 		-- z=1, y=5
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n5,
 		n3,
 		{name="default:glass"},
 		n3,
 		n5,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=1, y=6
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
 		n3,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=1, y=7
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 
@@ -289,29 +301,29 @@ schematic = {
 		n1,
 
 		-- z=2, y=5
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=2, y=6
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=2, y=7
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 
@@ -406,29 +418,29 @@ schematic = {
 		n1,
 
 		-- z=3, y=5
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=3, y=6
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=3, y=7
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 
@@ -523,29 +535,29 @@ schematic = {
 		n1,
 
 		-- z=4, y=5
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=4, y=6
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=4, y=7
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 		n1,
 
@@ -685,13 +697,13 @@ schematic = {
 		n1,
 
 		-- z=5, y=10
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
 		n3,
 		n3,
 		n3,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=5, y=11
 		n1,
@@ -802,21 +814,21 @@ schematic = {
 		n1,
 
 		-- z=6, y=10
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
 		n1,
 		n1,
 		n1,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=6, y=11
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=6, y=12
@@ -919,21 +931,21 @@ schematic = {
 		n1,
 
 		-- z=7, y=10
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
 		n1,
 		n1,
 		n1,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=7, y=11
 		n1,
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n1,
 		n1,
 		n1,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 		n1,
 
 		-- z=7, y=12
@@ -1036,13 +1048,13 @@ schematic = {
 		n1,
 
 		-- z=8, y=10
-		{name="stairs:stair_wood", param2=1},
+		n9,
 		n3,
 		n3,
 		n3,
 		n3,
 		n3,
-		{name="stairs:stair_wood", param2=3},
+		n10,
 
 		-- z=8, y=11
 		n1,

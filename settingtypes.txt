@@ -1,0 +1,2 @@
+settlements_minimum_distance_between_settlements (Minimum distance between settlements) int 500
+settlements_maximum_height_difference (Maximum ground height difference allowed in settlement site) int 10

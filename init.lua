@@ -1,5 +1,13 @@
 settlements = {}
 
+-- switch for debugging
+settlements.debug = false
+
+-- Minimum distance between settlements
+settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
+-- maximum allowed difference in height for building a settlement
+settlements.max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
+
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/const.lua")
@@ -29,15 +37,9 @@ end
 
 settlements.settlements_in_world = settlements_load()
 
---
 -- register block for npc spawn
---
-minetest.register_node("settlements:junglewood", {
-	description = "special junglewood floor",
-	tiles = {"default_junglewood.png"},
-	groups = {choppy=3, wood=2},
-	sounds = default.node_sound_wood_defaults(),
-})
+local junglewood_def = minetest.registered_nodes["default:junglewood"]
+minetest.register_node("settlements:junglewood", junglewood_def)
 --
 -- register inhabitants
 --
@@ -111,16 +113,6 @@ minetest.register_on_generated(function(minp, maxp)
 		return
 	end
 	--
-	-- time between creation of two settlements
-	--
-	if os.difftime(os.time(), settlements.last_settlement) < settlements.min_timer 
-	then
-		return
-	end
---		if settlements.debug == true then
---			 minetest.chat_send_all("Last opportunity ".. os.difftime(os.time(), settlements.last_settlement))
---		end
-	--
 	-- don't build settlement underground
 	--
 	if maxp.y < 0 then 
@@ -149,10 +141,6 @@ minetest.register_on_generated(function(minp, maxp)
 	end
 	-- 
 	-- if no hard showstoppers prevent the settlement -> try to do it (check for suitable terrain)
-	--
-	-- set timestamp of actual settlement
-	--
-	settlements.last_settlement = os.time()
 	
 	-- waiting necessary for chunk to load, otherwise, townhall is not in the middle, no map found behind townhall
 	minetest.after(3, function()
