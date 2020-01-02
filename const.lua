@@ -67,7 +67,7 @@ settlements.schematic_table = {
 	{
 		name = "townhall",
 		schematic = dofile(schem_path.."kingsmarket.lua"),
-		hwidth = 11, hdepth = 11, hheight = 10, hsize = 15,
+		hsize = 15,
 		max_num = 0, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 		replace_wall = false -- If true, default:cobble will be replaced with a random wall material
@@ -75,49 +75,49 @@ settlements.schematic_table = {
 	{
 		name = "well",
 		schematic = dofile(schem_path.."well.lua"),
-		hwidth = 5, hdepth = 5, hheight = 13, hsize = 11,
+		hsize = 11,
 		max_num = 0.045,
 		replace_wall = false
 	},
 	{
 		name = "hut",
 		schematic = dofile(schem_path.."hut.lua"),
-		hwidth = 7, hdepth = 7, hheight = 13, hsize = 11,
+		hsize = 11,
 		max_num = 0.9,
 		replace_wall = true
 	},
 	{
 		name = "garden",
 		schematic = dofile(schem_path.."garden.lua"),
-		hwidth = 7, hdepth = 7, hheight = 13, hsize = 11,
+		hsize = 11,
 		max_num = 0.1,
 		replace_wall = false
 	},
 	{
 		name = "lamp",
 		schematic = dofile(schem_path.."lamp.lua"),
-		hwidth = 3, hdepth = 3, hheight = 13, hsize = 10,
+		hsize = 10,
 		max_num = 0.1,
 		replace_wall = false
 	},
 	{
 		name = "tower",
 		schematic = dofile(schem_path.."tower.lua"),
-		hwidth = 7, hdepth = 7, hheight = 13, hsize = 11,
+		hsize = 11,
 		max_num = 0.055,
 		replace_wall = false
 	},
 	{
 		name = "church",
 		schematic = dofile(schem_path.."church.lua"),
-		hwidth = 7, hdepth = 10, hheight = 13, hsize = 17,
+		hsize = 17,
 		max_num = 0.050,
 		replace_wall = false
 	},
 	{
 		name = "blacksmith",
 		schematic = dofile(schem_path.."blacksmith.lua"),
-		hwidth = 7, hdepth = 7, hheight = 13, hsize = 11,
+		hsize = 11,
 		max_num = 0.050,
 		replace_wall = false
 	},

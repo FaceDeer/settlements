@@ -21,6 +21,26 @@ local function initialize_settlement_info()
 	
 	return settlement_info
 end
+
+
+-------------------------------------------------------------------------------
+-- check distance for new building
+-------------------------------------------------------------------------------
+local function check_distance(building_pos, building_size, settlement_info)
+	local distance
+	for i, built_house in ipairs(settlement_info) do
+		distance = math.sqrt(
+			((building_pos.x - built_house.pos.x)*(building_pos.x - built_house.pos.x))+
+			((building_pos.z - built_house.pos.z)*(building_pos.z - built_house.pos.z)))
+		if distance < building_size or 
+		distance < built_house.hsize
+		then
+			return false
+		end
+	end
+	return true
+end
+
 -------------------------------------------------------------------------------
 -- everything necessary to pick a fitting next building
 -------------------------------------------------------------------------------
@@ -36,7 +56,7 @@ local function pick_next_building(pos_surface, count_buildings, settlement_info)
 		if count_buildings[current_schematic_name] < current_schematic.max_num*number_of_buildings then
 			building_all_info = current_schematic
 			-- check distance to other buildings
-			local distance_to_other_buildings_ok = settlements.check_distance(pos_surface, 
+			local distance_to_other_buildings_ok = check_distance(pos_surface, 
 				building_all_info.hsize,
 				settlement_info)
 			if distance_to_other_buildings_ok then
@@ -111,8 +131,8 @@ function settlements.create_site_plan(maxp, minp, data, va)
 			for j = 0, 360, 15 do
 				local angle = j * math.pi / 180
 				local ptx, ptz = x + r * math.cos( angle ), z + r * math.sin( angle )
-				ptx = settlements.round(ptx, 0)
-				ptz = settlements.round(ptz, 0)
+				ptx = math.floor(ptx + 0.5) -- round
+				ptz = math.floor(ptz + 0.5)
 				local pos1 = { x=ptx, y=center_surface.y+50, z=ptz}
 				--
 				local pos_surface, surface_material = settlements.find_surface(pos1, data, va)

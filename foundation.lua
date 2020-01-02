@@ -33,22 +33,22 @@ function settlements.terraform(data, va, settlement_info)
 	for i, built_house in ipairs(settlement_info) do
 		-- pick right schematic_info to current built_house
 		for j, schem in ipairs(schematic_table) do
-			if settlement_info[i]["name"] == schem["name"]
+			if settlement_info[i].name == schem.name
 			then
 				schematic_data = schem
 				break
 			end
 		end
-		local pos = settlement_info[i]["pos"] 
-		if settlement_info[i]["rotat"] == "0" or settlement_info[i]["rotat"] == "180" 
+		local pos = settlement_info[i].pos
+		if settlement_info[i].rotat == "0" or settlement_info[i].rotat == "180" 
 		then
-			fwidth = schematic_data["hwidth"]
-			fdepth = schematic_data["hdepth"]
+			fwidth = schematic_data.schematic.size.x
+			fdepth = schematic_data.schematic.size.z
 		else
-			fwidth = schematic_data["hdepth"]
-			fdepth = schematic_data["hwidth"]
+			fwidth = schematic_data.schematic.size.z
+			fdepth = schematic_data.schematic.size.x
 		end
-		fheight = schematic_data["hheight"] * 3 -- remove trees and leaves above
+		fheight = schematic_data.schematic.size.y * 3 -- remove trees and leaves above
 		--
 		-- now that every info is available -> create platform and clear space above
 		--
