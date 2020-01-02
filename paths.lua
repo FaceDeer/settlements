@@ -7,10 +7,10 @@ function settlements.paths(minp, data, va, settlement_info)
 	local end_point
 	local distance
 	--for k,v in pairs(settlement_info) do
-	starting_point = settlement_info[1]["pos"] 
+	starting_point = settlement_info[1].pos
 	for o,p in pairs(settlement_info) do
 
-		end_point = settlement_info[o]["pos"] 
+		end_point = settlement_info[o].pos
 		if starting_point ~= end_point
 		then
 			-- loop until end_point is reched (distance == 0)
@@ -75,7 +75,6 @@ function settlements.paths(minp, data, va, settlement_info)
 					local vi = va:index(surface_point.x, surface_point.y, surface_point.z)
 					data[vi] = c_gravel
 
-					--minetest.swap_node(surface_point,{name="default:gravel"}) 
 					-- don't set y coordinate, surface might be too low or high
 					starting_point.x = surface_point.x
 					starting_point.z = surface_point.z

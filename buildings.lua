@@ -12,13 +12,6 @@ local schematic_table = settlements.schematic_table
 -- initialize settlement_info 
 -------------------------------------------------------------------------------
 local function initialize_settlement_info()
-	local count_buildings = {}
-	-- count_buildings table reset
-	for k,v in pairs(schematic_table) do
---		local name = schematic_table[v]["name"]
-		count_buildings[v["name"]] = 0
-	end
-
 	-- randomize number of buildings
 	number_of_buildings = math.random(10,25)
 	number_built = 1
@@ -26,7 +19,7 @@ local function initialize_settlement_info()
 		minetest.chat_send_all("settlement ".. number_of_buildings)
 	end
 	
-	return count_buildings
+	return settlement_info
 end
 -------------------------------------------------------------------------------
 -- everything necessary to pick a fitting next building
@@ -38,7 +31,9 @@ local function pick_next_building(pos_surface, count_buildings, settlement_info)
 	for i = size, 1, -1 do
 		-- already enough buildings of that type?
 		local current_schematic = randomized_schematic_table[i]
-		if count_buildings[current_schematic.name] < current_schematic.max_num*number_of_buildings then
+		local current_schematic_name = current_schematic.name
+		count_buildings[current_schematic_name] = count_buildings[current_schematic_name] or 0
+		if count_buildings[current_schematic_name] < current_schematic.max_num*number_of_buildings then
 			building_all_info = current_schematic
 			-- check distance to other buildings
 			local distance_to_other_buildings_ok = settlements.check_distance(pos_surface, 
@@ -89,8 +84,9 @@ function settlements.create_site_plan(maxp, minp, data, va)
 	settlements_save()
 
 	-- initialize all settlement_info table
-	local count_buildings = initialize_settlement_info()
+	initialize_settlement_info()
 	local settlement_info = {}
+	local count_buildings = {}
 	
 	-- first building is townhall in the center
 	building_all_info = schematic_table[1]
@@ -99,15 +95,15 @@ function settlements.create_site_plan(maxp, minp, data, va)
 	local index = 1
 	settlement_info[index] = {
 		pos = center_surface, 
-		name = building_all_info["name"], 
-		hsize = building_all_info["hsize"],
+		name = building_all_info.name,
+		hsize = building_all_info.hsize,
 		rotat = rotation,
 		surface_mat = surface_material
 	}
 	--increase index for following buildings
 	index = index + 1
 	-- now some buildings around in a circle, radius = size of town center
-	local x, z, r = center_surface.x, center_surface.z, building_all_info["hsize"]
+	local x, z, r = center_surface.x, center_surface.z, building_all_info.hsize
 	-- draw j circles around center and increase radius by math.random(2,5)
 	for j = 1,20 do
 		if number_built < number_of_buildings	then 
@@ -128,8 +124,8 @@ function settlements.create_site_plan(maxp, minp, data, va)
 						number_built = number_built + 1
 						settlement_info[index] = {
 							pos = pos_surface, 
-							name = building_all_info["name"], 
-							hsize = building_all_info["hsize"],
+							name = building_all_info.name,
+							hsize = building_all_info.hsize,
 							rotat = rotation,
 							surface_mat = surface_material
 						}
@@ -184,7 +180,7 @@ function settlements.place_schematics(vm, settlement_info)
 		replacements["default:junglewood"] = "settlements:junglewood"
 
 		if settlements.debug then
-			minetest.chat_send_all("building " .. settlement_info[i]["name"] .. " at " .. minetest.pos_to_string(pos))
+			minetest.chat_send_all("building " .. settlement_info[i].name .. " at " .. minetest.pos_to_string(pos))
 		end
 		minetest.place_schematic_on_vmanip(
 			vm, 
