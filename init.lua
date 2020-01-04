@@ -145,62 +145,63 @@ minetest.register_on_generated(function(minp, maxp)
 	then
 		return
 	end
-	-- 
-	-- if no hard showstoppers prevent the settlement -> try to do it (check for suitable terrain)
 	
-	-- waiting necessary for chunk to load, otherwise, townhall is not in the middle, no map found behind townhall
-	minetest.after(3, function()
-		settlements.generate_settlement(minp, maxp)
-	end)
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+
+	settlements.generate_settlement_vm(vm, va, minp, maxp)
 end)
---
+
+
+local debug_building_index = 1
+local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
 -- manually place buildings, for debugging only
---
 minetest.register_craftitem("settlements:tool", {
 	description = "settlements build tool",
 	inventory_image = "default_tool_woodshovel.png",
 	--
 	-- build single house
 	--
---		on_use = function(itemstack, placer, pointed_thing)
---			local center_surface = pointed_thing.under
---			if center_surface then
---				local building_all_info = {name = "blacksmith", 
---					mts = schem_path.."blacksmith.mts", 
---					hsize = 13, 
---					max_num = 0.9, 
---					rplc = "n"}
---				settlements.build_schematic(center_surface, 
---					building_all_info["mts"],
---					building_all_info["rplc"], 
---					building_all_info["name"])
---			end
---		end,
+		on_use = function(itemstack, placer, pointed_thing)
+			local center_surface = pointed_thing.under
+			if center_surface then
+				local selected_building = settlements.schematic_table[debug_building_index]
+				local built_house = {}
+				built_house.schematic_info = selected_building
+				built_house.pos = center_surface
+				built_house.rotation = "0"
+				built_house.surface_mat = c_dirt_with_grass
+				
+				local vm = minetest.get_voxel_manip()
+				local maxp = vector.add(center_surface, selected_building.schematic.size)
+				local emin, emax = vm:read_from_map(center_surface, maxp)
+
+				settlements.place_building(vm, built_house)
+				vm:write_to_map()
+
+				debug_building_index = debug_building_index + 1
+				if debug_building_index > #settlements.schematic_table then
+					debug_building_index = 1
+				end
+			end
+		end,
 	--
-	-- build ssettlement
+	-- build settlement
 	--
 	on_place = function(itemstack, placer, pointed_thing)
 		-- enable debug routines
 		settlements.debug = true
 		local center_surface = pointed_thing.under
 		if center_surface then
-			local minp = {
-				x=center_surface.x-half_map_chunk_size, 
-				y=center_surface.y-half_map_chunk_size, 
-				z=center_surface.z-half_map_chunk_size
-			}
-			local maxp = {
-				x=center_surface.x+half_map_chunk_size, 
-				y=center_surface.y+half_map_chunk_size, 
-				z=center_surface.z+half_map_chunk_size
-			}
+			local minp = vector.subtract(center_surface, half_map_chunk_size)
+			local maxp = vector.add(center_surface, half_map_chunk_size)
 			
 			local start_time = os.time()
 
 			settlements.generate_settlement(minp, maxp)
 
 			local end_time = os.time()
-			minetest.chat_send_all("Zeit ".. end_time - start_time)
+			minetest.chat_send_all("Time ".. end_time - start_time)
 		end
 	end
 })

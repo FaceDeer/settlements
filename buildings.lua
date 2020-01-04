@@ -7,6 +7,8 @@ local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
 local c_dirt_with_snow				= minetest.get_content_id("default:dirt_with_snow")
 local c_dirt_with_dry_grass			= minetest.get_content_id("default:dirt_with_dry_grass")
 local c_dirt_with_coniferous_litter = minetest.get_content_id("default:dirt_with_coniferous_litter")
+local c_dirt_with_rainforest_litter	= minetest.get_content_id("default:dirt_with_rainforest_litter")
+local c_dry_dirt					= minetest.get_content_id("default:dry_dirt")
 local c_dry_dirt_with_dry_grass		= minetest.get_content_id("default:dry_dirt_with_dry_grass")
 local c_sand						= minetest.get_content_id("default:sand")
 local c_desert_sand					= minetest.get_content_id("default:desert_sand")
@@ -16,8 +18,21 @@ local c_air							= minetest.get_content_id("air")
 local c_water_source				= minetest.get_content_id("default:water_source")
 local c_water_flowing				= minetest.get_content_id("default:water_flowing")
 
-local c_stone = minetest.get_content_id("default:stone")
+local c_stone						= minetest.get_content_id("default:stone")
 
+-- Allowable surface materials to build settlements on
+local surface_mat = {
+	[c_dirt_with_grass] = true,
+	[c_dirt_with_snow] = true,
+	[c_dirt_with_dry_grass] = true,
+	[c_dry_dirt_with_dry_grass] = true,
+	[c_dry_dirt] = true,
+	[c_dirt_with_coniferous_litter] = true,
+	[c_dirt_with_rainforest_litter] = true,
+	[c_sand] = true,
+	[c_desert_sand] = true,
+	[c_silver_sand] = true,
+}
 
 -------------------------------------------------------------------------------
 -- function to fill empty space below baseplate when building on a hill
@@ -78,16 +93,6 @@ local function terraform(data, va, settlement_info)
 		end
 	end
 end
-
-local surface_mat = {
-	[c_dirt_with_grass] = true,
-	[c_dirt_with_snow] = true,
-	[c_dirt_with_dry_grass] = true,
-	[c_dirt_with_coniferous_litter] = true,
-	[c_sand] = true,
-	[c_desert_sand] = true,
-	[c_silver_sand] = true,
-}
 
 local buildable_to_set
 local buildable_to = function(c_node)
@@ -225,7 +230,7 @@ end
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
-local function create_site_plan(maxp, minp, data, va)
+local function create_site_plan(minp, maxp, data, va)
 	local possible_rotations = {"0", "90", "180", "270"}
 	-- find center of chunk
 	local center = {
@@ -279,9 +284,13 @@ local function create_site_plan(maxp, minp, data, va)
 				local pos1 = { x=ptx, y=center_surface.y, z=ptz}
 				--
 				local pos_surface, surface_material = find_surface(pos1, data, va)
-				if pos_surface 
-				then
+				-- Even though find_surface guards against underwater nodes, it's possible for mapgen to create
+				-- a temporary air pocket below the ocean's surface level so check absolute elevation here too
+				if pos_surface and pos_surface.y > -1 then
 					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info)
+					
+					-- TODO test if building fits inside va
+					
 					if building_all_info then
 						rotation = possible_rotations[ math.random( #possible_rotations ) ]
 						number_built = number_built + 1
@@ -310,44 +319,6 @@ local function create_site_plan(maxp, minp, data, va)
 		minetest.chat_send_all("really ".. number_built)
 	end
 	return settlement_info
-end
-
--------------------------------------------------------------------------------
--- evaluate settlement_info and place schematics
--------------------------------------------------------------------------------
-local function place_schematics(vm, settlement_info)
-	for _, built_house in ipairs(settlement_info) do
-		
-		local building_all_info = built_house.schematic_info
-
-		local pos = built_house.pos
-		local rotation = built_house.rotation
-		-- get building node material for better integration to surrounding
-		local platform_material = built_house.surface_mat
-		local platform_material_name = minetest.get_name_from_content_id(platform_material)
-
-		local building_schematic = building_all_info.schematic
-		
-		local replacements = {}
-		
-		if building_all_info.replace_wall then
-			replacements["default:cobble"] = wallmaterial[math.random(1,#wallmaterial)]
-		end
-		replacements["default:dirt_with_grass"] = platform_material_name
-		replacements["default:junglewood"] = "settlements:junglewood"
-
-		if settlements.debug then
-			minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
-		end
-		minetest.place_schematic_on_vmanip(
-			vm, 
-			pos, 
-			building_schematic, 
-			rotation, 
-			replacements,
-			true)
-
-	end
 end
 
 local function fill_chest(pos)
@@ -414,9 +385,8 @@ local function initialize_nodes(settlement_info)
 	end
 end
 
-
 -- generate paths between buildings
-local function paths(minp, data, va, settlement_info)
+local function paths(data, va, settlement_info)
 	local c_gravel = minetest.get_content_id("default:gravel")
 	local starting_point
 	local end_point
@@ -505,18 +475,42 @@ local function paths(minp, data, va, settlement_info)
 	end
 end
 
+function settlements.place_building(vm, built_house)
+	local building_all_info = built_house.schematic_info
+
+	local pos = built_house.pos
+	local rotation = built_house.rotation
+	-- get building node material for better integration to surrounding
+	local platform_material = built_house.surface_mat
+	local platform_material_name = minetest.get_name_from_content_id(platform_material)
+
+	local building_schematic = building_all_info.schematic
+	
+	local replacements = {}
+	
+	if building_all_info.replace_wall then
+		replacements["default:cobble"] = wallmaterial[math.random(1,#wallmaterial)]
+	end
+	replacements["default:dirt_with_grass"] = platform_material_name
+	replacements["default:junglewood"] = "settlements:junglewood"
+
+	if settlements.debug then
+		minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
+	end
+	minetest.place_schematic_on_vmanip(
+		vm, 
+		pos, 
+		building_schematic, 
+		rotation, 
+		replacements,
+		true)
+end
+
 local data = {} -- for better memory management, use externally-allocated buffer
--- on map generation, try to build a settlement
-settlements.generate_settlement = function(minp, maxp)
-	local vm = minetest.get_voxel_manip()
-	local emin, emax = vm:read_from_map(minp, maxp)
-	local va = VoxelArea:new{
-		MinEdge = emin,
-		MaxEdge = emax
-	}
+settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	vm:get_data(data)
 	
-	local settlement_info = create_site_plan(maxp, minp, data, va)
+	local settlement_info = create_site_plan(minp, maxp, data, va)
 	if not settlement_info
 	then
 		return
@@ -526,13 +520,27 @@ settlements.generate_settlement = function(minp, maxp)
 	terraform(data, va, settlement_info)
 
 	-- evaluate settlement_info and build paths between buildings
-	paths(minp, data, va, settlement_info)
+	paths(data, va, settlement_info)
 
 	-- evaluate settlement_info and place schematics
 	vm:set_data(data)
-	place_schematics(vm, settlement_info)
-	vm:write_to_map(true)
+	for _, built_house in ipairs(settlement_info) do
+		settlements.place_building(vm, built_house)
+	end
+	vm:write_to_map()
 
 	-- evaluate settlement_info and initialize furnaces and chests
 	initialize_nodes(settlement_info)
+end
+
+-- on map generation, try to build a settlement
+settlements.generate_settlement = function(minp, maxp)
+	local vm = minetest.get_voxel_manip()
+	local emin, emax = vm:read_from_map(minp, maxp)
+	local va = VoxelArea:new{
+		MinEdge = emin,
+		MaxEdge = emax
+	}
+	
+	settlements.generate_settlement_vm(vm, va, minp, maxp)
 end
