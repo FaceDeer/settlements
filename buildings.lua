@@ -7,6 +7,7 @@ local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
 local c_dirt_with_snow				= minetest.get_content_id("default:dirt_with_snow")
 local c_dirt_with_dry_grass			= minetest.get_content_id("default:dirt_with_dry_grass")
 local c_dirt_with_coniferous_litter = minetest.get_content_id("default:dirt_with_coniferous_litter")
+local c_dry_dirt_with_dry_grass		= minetest.get_content_id("default:dry_dirt_with_dry_grass")
 local c_sand						= minetest.get_content_id("default:sand")
 local c_desert_sand					= minetest.get_content_id("default:desert_sand")
 local c_silver_sand					= minetest.get_content_id("default:silver_sand")
@@ -275,7 +276,7 @@ local function create_site_plan(maxp, minp, data, va)
 				local ptx, ptz = x + r * math.cos( angle ), z + r * math.sin( angle )
 				ptx = math.floor(ptx + 0.5) -- round
 				ptz = math.floor(ptz + 0.5)
-				local pos1 = { x=ptx, y=center_surface.y+50, z=ptz}
+				local pos1 = { x=ptx, y=center_surface.y, z=ptz}
 				--
 				local pos_surface, surface_material = find_surface(pos1, data, va)
 				if pos_surface 
