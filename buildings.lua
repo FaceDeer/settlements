@@ -47,7 +47,7 @@ local function terraform(data, va, settlement_info)
 	local fdepth
 
 	for i, built_house in ipairs(settlement_info) do
-		schematic_data = built_house.schematic_info
+		local schematic_data = built_house.schematic_info
 		local pos = settlement_info[i].pos
 		if settlement_info[i].rotation == "0" or settlement_info[i].rotation == "180" 
 		then
