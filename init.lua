@@ -30,7 +30,19 @@ end
 settlements.settlements_in_world = settlements_load()
 
 -- register block for npc spawn
-local junglewood_def = minetest.registered_nodes["default:junglewood"]
+local function deep_copy(table_in)
+	local table_out = {}
+	for index, value in pairs(table_in) do
+		if type(value) == "table" then
+			table_out[index] = deep_copy(value)
+		else
+			table_out[index] = value
+		end
+	end
+	return table_out
+end
+
+local junglewood_def = deep_copy(minetest.registered_nodes["default:junglewood"])
 minetest.register_node("settlements:junglewood", junglewood_def)
 -- register inhabitants
 if minetest.get_modpath("mobs_npc") ~= nil then
@@ -127,11 +139,7 @@ minetest.register_on_generated(function(minp, maxp)
 	end
 
 	-- don't build settlements too close to each other
-	local center_of_chunk = { 
-		x=maxp.x-half_map_chunk_size, 
-		y=maxp.y-half_map_chunk_size, 
-		z=maxp.z-half_map_chunk_size
-	} 
+	local center_of_chunk = vector.subtract(maxp, half_map_chunk_size)
 	local dist_ok = check_distance_other_settlements(center_of_chunk)
 	if dist_ok == false 
 	then

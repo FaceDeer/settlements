@@ -527,7 +527,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	for _, built_house in ipairs(settlement_info) do
 		settlements.place_building(vm, built_house)
 	end
-	vm:write_to_map()
+	vm:write_to_map(true)
 
 	-- evaluate settlement_info and initialize furnaces and chests
 	initialize_nodes(settlement_info)

@@ -1,7 +1,7 @@
 local n1 = { name = "default:dirt_with_grass" }
 local n2 = { name = "air" }
 local n3 = { name = "stairs:stair_wood" }
-local n4 = { name = "default:junglewood" }
+local n4 = { name = "settlements:junglewood" }
 local n5 = { name = "default:tree", param2 = 2 }
 local n6 = { name = "default:cobble" }
 local n7 = { name = "doors:door_wood_a", param2 = 2 }
@@ -10,7 +10,7 @@ local n9 = { name = "default:tree", param2 = 3 }
 local n10 = { name = "default:tree", param2 = 7 }
 local n11 = { name = "default:tree", param2 = 9 }
 local n12 = { name = "stairs:stair_wood", param2 = 2 }
-local n13 = { name = "beds:bed_bottom" }
+local n13 = { name = "commoditymarket:night_market" }
 local n14 = { name = "default:fence_wood" }
 local n15 = { name = "xpanes:pane_flat", param2 = 3 }
 local n16 = { name = "doors:trapdoor", param2 = 1 }
@@ -19,10 +19,9 @@ local n18 = { name = "default:torch_wall", param2 = 3 }
 local n19 = { name = "stairs:stair_wood", param2 = 1 }
 local n20 = { name = "default:wood" }
 local n21 = { name = "stairs:stair_wood", param2 = 3 }
-local n22 = { name = "beds:bed_top" }
-local n23 = { name = "default:chest", param2 = 1 }
-local n24 = { name = "default:tree", param2 = 1 }
-local n25 = { name = "xpanes:pane_flat" }
+local n22 = { name = "default:chest", param2 = 1 }
+local n23 = { name = "default:tree", param2 = 1 }
+local n24 = { name = "xpanes:pane_flat" }
 
 return {
 	yslice_prob = {
@@ -108,7 +107,7 @@ return {
 		-- z=4, y=0
 		n1, n4, n4, n4, n4, n4, n1, 
 		-- z=4, y=1
-		n2, n6, n22, n2, n23, n6, n2, 
+		n2, n6, n2, n2, n22, n6, n2, 
 		-- z=4, y=2
 		n2, n6, n2, n2, n2, n6, n2, 
 		-- z=4, y=3
@@ -125,11 +124,11 @@ return {
 		-- z=5, y=0
 		n1, n4, n4, n4, n4, n4, n1, 
 		-- z=5, y=1
-		n2, n9, n6, n6, n6, n24, n2, 
+		n2, n9, n6, n6, n6, n23, n2, 
 		-- z=5, y=2
-		n2, n9, n6, n25, n6, n24, n2, 
+		n2, n9, n6, n24, n6, n23, n2, 
 		-- z=5, y=3
-		n2, n9, n6, n6, n6, n24, n2, 
+		n2, n9, n6, n6, n6, n23, n2, 
 		-- z=5, y=4
 		n2, n11, n2, n11, n2, n11, n2, 
 		-- z=5, y=5
