@@ -140,7 +140,7 @@ minetest.register_on_generated(function(minp, maxp)
 
 	-- don't build settlements on (too) uneven terrain
 	local heightmap = minetest.get_mapgen_object("heightmap")
-	local height_difference = settlements.evaluate_heightmap(heightmap)
+	local height_difference = evaluate_heightmap(heightmap)
 	if height_difference > settlements.max_height_difference 
 	then
 		return
