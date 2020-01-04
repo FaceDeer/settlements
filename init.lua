@@ -11,10 +11,7 @@ settlements.max_height_difference = tonumber(minetest.settings:get("settlements_
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/const.lua")
-dofile(modpath.."/utils.lua")
-dofile(modpath.."/foundation.lua")
 dofile(modpath.."/buildings.lua")
-dofile(modpath.."/paths.lua")
 
 local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
@@ -56,118 +53,6 @@ if minetest.get_modpath("mobs_npc") ~= nil then
 end 
 
 
-
-
-local function fill_chest(pos)
-	-- initialize chest (mts chests don't have meta)
-	local meta = minetest.get_meta(pos)
-	if meta:get_string("infotext") ~= "Chest" then
-		minetest.registered_nodes["default:chest"].on_construct(pos)
-	end
-	-- fill chest
-	local inv = minetest.get_inventory( {type="node", pos=pos} )
-	-- always
-	inv:add_item("main", "default:apple "..math.random(1,3))
-	-- low value items
-	if math.random(0,1) < 1 then
-		inv:add_item("main", "farming:bread "..math.random(0,3))
-		inv:add_item("main", "default:steel_ingot "..math.random(0,3))
-		-- additional fillings when farmin mod enabled
-		if minetest.get_modpath("farming") ~= nil and farming.mod == "redo" then
-			if math.random(0,1) < 1 then
-				inv:add_item("main", "farming:melon_slice "..math.random(0,3))
-				inv:add_item("main", "farming:carrot "..math.random(0,3))
-				inv:add_item("main", "farming:corn "..math.random(0,3))
-			end
-		end
-	end
-	-- medium value items
-	if math.random(0,3) < 1 then
-		inv:add_item("main", "default:pick_steel "..math.random(0,1))
-		inv:add_item("main", "default:pick_bronze "..math.random(0,1))
-		inv:add_item("main", "fire:flint_and_steel "..math.random(0,1))
-		inv:add_item("main", "bucket:bucket_empty "..math.random(0,1))
-		inv:add_item("main", "default:sword_steel "..math.random(0,1))
-	end
-end
-
-local function initialize_nodes(settlement_info)
-	for i, built_house in ipairs(settlement_info) do
-		for j, schem in ipairs(schematic_table) do
-			if settlement_info[i]["name"] == schem["name"]
-			then
-				building_all_info = schem
-				break
-			end
-		end
-
-		local width = building_all_info.schematic.size.x
-		local depth = building_all_info.schematic.size.z
-		local height = building_all_info.schematic.size.y
-
-		local p = settlement_info[i].pos
-		for yi = 1,height do
-			for xi = 0,width do
-				for zi = 0,depth do
-					local ptemp = {x=p.x+xi, y=p.y+yi, z=p.z+zi}
-					local node = minetest.get_node(ptemp) 
-					if node.name == "default:furnace" or
-						node.name == "default:chest" or
-						node.name == "default:bookshelf" or
-						node.name == "vessels:shelf"
-					then
-						minetest.registered_nodes[node.name].on_construct(ptemp)
-					end
-					-- when chest is found -> fill with stuff
-					if node.name == "default:chest" then
-						minetest.after(3,fill_chest,ptemp)
-					end
-				end
-			end
-		end
-	end
-end
-
-
---
--- on map generation, try to build a settlement
---
-local generate_settlement = function(minp, maxp)
-	local vm = minetest.get_voxel_manip()
-	local emin, emax = vm:read_from_map(minp, maxp)
-	local va = VoxelArea:new{
-		MinEdge = emin,
-		MaxEdge = emax
-	}
-	local data = vm:get_data()
-	
-	local settlement_info = settlements.create_site_plan(maxp, minp, data, va)
-	if not settlement_info
-	then
-		return
-	end
-	--
-	-- evaluate settlement_info and prepare terrain
-	--
-	settlements.terraform(data, va, settlement_info)
-
-	--
-	-- evaluate settlement_info and build paths between buildings
-	--
-	settlements.paths(minp, data, va, settlement_info)
-	--
-	-- evaluate settlement_info and place schematics
-	--
-	vm:set_data(data)
-	settlements.place_schematics(vm, settlement_info)
-	vm:write_to_map(true)
-	--
-	-- evaluate settlement_info and initialize furnaces and chests
-	--
-	initialize_nodes(settlement_info)
-end
-
-
 -------------------------------------------------------------------------------
 -- check distance to other settlements
 -------------------------------------------------------------------------------
@@ -183,26 +68,65 @@ local function check_distance_other_settlements(center_new_chunk)
 	return true
 end
 
+-------------------------------------------------------------------------------
+-- evaluate heightmap
+-------------------------------------------------------------------------------
+local function evaluate_heightmap(heightmap)
+	-- max height and min height, initialize with impossible values for easier first time setting
+	local max_y = -50000
+	local min_y = 50000
+	-- only evaluate the center square of heightmap 40 x 40
+	local square_start = 1621
+	local square_end = 1661
+	for j = 1 , 40, 1 do
+		for i = square_start, square_end, 1 do
+			-- skip buggy heightmaps, return high value
+			if heightmap[i] == -31000 or
+			heightmap[i] == 31000
+			then
+				return settlements.max_height_difference + 1
+			end
+			if heightmap[i] < min_y
+			then
+				min_y = heightmap[i]
+			end
+			if heightmap[i] > max_y
+			then
+				max_y = heightmap[i]
+			end
+		end
+		-- set next line
+		square_start = square_start + 80
+		square_end = square_end + 80
+	end
+	-- return the difference between highest and lowest pos in chunk
+	local height_diff = max_y - min_y
+	-- filter buggy heightmaps
+	if height_diff <= 1 
+	then
+		return settlements.max_height_difference + 1
+	end
+	-- debug info
+	if settlements.debug == true
+	then
+		minetest.chat_send_all("heightdiff ".. height_diff)
+	end
+	return height_diff
+end
+
+
 minetest.register_on_generated(function(minp, maxp)
-	--
-	-- needed for manual and automated settlement building
-	--
-	local heightmap = minetest.get_mapgen_object("heightmap")
-	--
 	-- randomly try to build settlements
-	-- 
-	if math.random(1,10)>6 then
+	if math.random() > 0.6 then
 		return
 	end
-	--
+
 	-- don't build settlement underground
-	--
 	if maxp.y < 0 then 
 		return 
 	end
-	--
+
 	-- don't build settlements too close to each other
-	--
 	local center_of_chunk = { 
 		x=maxp.x-half_map_chunk_size, 
 		y=maxp.y-half_map_chunk_size, 
@@ -213,9 +137,9 @@ minetest.register_on_generated(function(minp, maxp)
 	then
 		return
 	end
-	--
+
 	-- don't build settlements on (too) uneven terrain
-	--
+	local heightmap = minetest.get_mapgen_object("heightmap")
 	local height_difference = settlements.evaluate_heightmap(heightmap)
 	if height_difference > settlements.max_height_difference 
 	then
@@ -226,7 +150,7 @@ minetest.register_on_generated(function(minp, maxp)
 	
 	-- waiting necessary for chunk to load, otherwise, townhall is not in the middle, no map found behind townhall
 	minetest.after(3, function()
-		generate_settlement(minp, maxp)
+		settlements.generate_settlement(minp, maxp)
 	end)
 end)
 --
@@ -273,7 +197,7 @@ minetest.register_craftitem("settlements:tool", {
 			
 			local start_time = os.time()
 
-			generate_settlement(minp, maxp)
+			settlements.generate_settlement(minp, maxp)
 
 			local end_time = os.time()
 			minetest.chat_send_all("Zeit ".. end_time - start_time)
