@@ -73,14 +73,6 @@ settlements.schematic_table = {
 		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
 	},
 	{
-		name = "kingsmarket",
-		schematic = dofile(schem_path.."kingsmarket.lua"),
-		hsize = 15, -- buffer space around the building, footprint is treated as this size for spacing purposes
-		max_num = 0.1, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
-					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
-		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
-	},
-	{
 		name = "well",
 		schematic = dofile(schem_path.."well.lua"),
 		hsize = 11,
@@ -118,7 +110,7 @@ settlements.schematic_table = {
 	{
 		name = "church",
 		schematic = dofile(schem_path.."church.lua"),
-		hsize = 17,
+		hsize = 15,
 		max_num = 0.075,
 		replace_wall = false
 	},
@@ -129,13 +121,26 @@ settlements.schematic_table = {
 		max_num = 0.050,
 		replace_wall = false
 	},
+}
+
+if minetest.get_modpath("commoditymarket") then
+	table.insert(settlements.schematic_table,
+	{
+		name = "kingsmarket",
+		schematic = dofile(schem_path.."kingsmarket.lua"),
+		hsize = 13, -- buffer space around the building, footprint is treated as this size for spacing purposes
+		max_num = 0.1, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
+					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
+		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
+	})
+	table.insert(settlements.schematic_table,
 	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
 		hsize = 11,
 		max_num = 0.025,
 		replace_wall = true
-	},
-}
+	})
+end
 
 settlements.half_map_chunk_size = 40
