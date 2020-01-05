@@ -232,6 +232,10 @@ end
 --------------------------------------------------------------------------------
 local function create_site_plan(minp, maxp, data, va)
 	local possible_rotations = {"0", "90", "180", "270"}
+--	local possible_wallmaterials = wallmaterial
+	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
+
+	
 	-- find center of chunk
 	local center = {
 		x=maxp.x-half_map_chunk_size, 
@@ -268,7 +272,8 @@ local function create_site_plan(minp, maxp, data, va)
 		pos = center_surface, 
 		schematic_info = townhall,
 		rotation = rotation,
-		surface_mat = surface_material
+		surface_mat = surface_material,
+		wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 	}
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z, r = center_surface.x, center_surface.z, townhall.hsize
@@ -298,7 +303,8 @@ local function create_site_plan(minp, maxp, data, va)
 							pos = pos_surface, 
 							schematic_info = building_all_info,
 							rotation = rotation,
-							surface_mat = surface_material
+							surface_mat = surface_material,
+							wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 						}
 						if number_of_buildings == number_built 
 						then
@@ -399,7 +405,7 @@ local function paths(data, va, settlement_info)
 		end_point = built_house.pos
 		if starting_point ~= end_point
 		then
-			-- loop until end_point is reched (distance == 0)
+			-- loop until end_point is reached (distance == 0)
 			while true do
 
 				-- define surrounding pos to starting_point
@@ -489,7 +495,7 @@ function settlements.place_building(vm, built_house)
 	local replacements = {}
 	
 	if building_all_info.replace_wall then
-		replacements["default:cobble"] = wallmaterial[math.random(1,#wallmaterial)]
+		replacements["default:cobble"] = built_house.wall_mat
 	end
 	replacements["default:dirt_with_grass"] = platform_material_name
 	replacements["default:junglewood"] = "settlements:junglewood"
@@ -527,7 +533,8 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	for _, built_house in ipairs(settlement_info) do
 		settlements.place_building(vm, built_house)
 	end
-	vm:write_to_map(true)
+	vm:calc_lighting()
+	vm:write_to_map()
 
 	-- evaluate settlement_info and initialize furnaces and chests
 	initialize_nodes(settlement_info)
