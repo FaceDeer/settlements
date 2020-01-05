@@ -201,13 +201,15 @@ end
 -------------------------------------------------------------------------------
 -- save list of generated settlements
 -------------------------------------------------------------------------------
-local function settlements_save()
+function settlements.settlements_save()
 	local file = io.open(minetest.get_worldpath().."/settlements.txt", "w")
 	if file then
 		file:write(minetest.serialize(settlements.settlements_in_world))
 		file:close()
 	end
 end
+
+local building_counts = {}
 
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
@@ -237,12 +239,6 @@ local function create_site_plan(minp, maxp, data, va)
 		name = namegen.generate("settlement_towns")
 	end
 	
-	-- add settlement to list
-	table.insert(settlements.settlements_in_world, 
-		{pos=center_surface, name=name})
-	-- save list to file
-	settlements_save()
-
 	local settlement_info = {}
 	settlement_info.name = name
 	local number_of_buildings = math.random(10,25)
@@ -265,6 +261,7 @@ local function create_site_plan(minp, maxp, data, va)
 		surface_mat = surface_material,
 		wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 	}
+	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z, r = center_surface.x, center_surface.z, townhall.hsize
 	-- draw j circles around center and increase radius by math.random(2,5)
@@ -284,7 +281,9 @@ local function create_site_plan(minp, maxp, data, va)
 				if pos_surface and pos_surface.y > -1 then
 					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info)
 					
-					-- TODO test if building fits inside va
+					-- TODO test if building fits inside va. Doesn't seem to be a problem for mapgen, but
+					-- sometimes the debugging tool cuts buildings at the edges of town. Maybe expand the debugging
+					-- tool's voxel area a bit instead?
 					
 					if building_all_info then
 						rotation = possible_rotations[ math.random( #possible_rotations ) ]
@@ -296,6 +295,7 @@ local function create_site_plan(minp, maxp, data, va)
 							surface_mat = surface_material,
 							wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 						}
+						building_counts[building_all_info.name] = (building_counts[building_all_info.name] or 0) + 1
 						if number_of_buildings == number_built 
 						then
 							break
@@ -314,8 +314,22 @@ local function create_site_plan(minp, maxp, data, va)
 	then
 		minetest.chat_send_all("really ".. number_built)
 	end
+	
+	if number_built == 1 then
+		return nil
+	end
+	-- add settlement to list
+	table.insert(settlements.settlements_in_world, 
+		{pos=center_surface, name=name, discovered_by = {}})
+	-- save list to file
+	settlements.settlements_save()
+
 	return settlement_info
 end
+
+minetest.register_on_shutdown(function()
+	minetest.debug(dump(building_counts))
+end)
 
 local function fill_chest(pos)
 	-- initialize chest (mts chests don't have meta)
@@ -376,6 +390,9 @@ local function initialize_nodes(settlement_info)
 					-- when chest is found -> fill with stuff
 					if node.name == "default:chest" then
 						minetest.after(3,fill_chest,ptemp)
+					end
+					if minetest.get_item_group(node.name, "plant") > 0 then
+						minetest.get_node_timer(ptemp):start(1000) -- start crops growing
 					end
 				end
 			end

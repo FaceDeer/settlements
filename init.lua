@@ -12,6 +12,7 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/const.lua")
 dofile(modpath.."/buildings.lua")
+dofile(modpath.."/hud.lua")
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
@@ -36,6 +37,9 @@ local function settlements_load()
 				end
 				if settlement.name == nil and minetest.get_modpath("namegen") then
 					settlement.name = namegen.generate("settlement_towns")
+				end
+				if settlement.discovered_by == nil then
+					settlement.discovered_by = {}
 				end
 			end
 			return settlements
@@ -145,9 +149,9 @@ end
 
 minetest.register_on_generated(function(minp, maxp)
 	-- randomly try to build settlements
-	if math.random() > 0.6 then
-		return
-	end
+--	if math.random() > 0.6 then
+--		return
+--	end
 
 	-- don't build settlement underground
 	if maxp.y < 0 then 
@@ -186,29 +190,29 @@ minetest.register_craftitem("settlements:tool", {
 	--
 	-- build single house
 	--
-		on_use = function(itemstack, placer, pointed_thing)
-			local center_surface = pointed_thing.under
-			if center_surface then
-				local selected_building = settlements.schematic_table[debug_building_index]
-				local built_house = {}
-				built_house.schematic_info = selected_building
-				built_house.pos = center_surface
-				built_house.rotation = "0"
-				built_house.surface_mat = c_dirt_with_grass
-				
-				local vm = minetest.get_voxel_manip()
-				local maxp = vector.add(center_surface, selected_building.schematic.size)
-				local emin, emax = vm:read_from_map(center_surface, maxp)
+	on_use = function(itemstack, placer, pointed_thing)
+		local center_surface = pointed_thing.under
+		if center_surface then
+			local selected_building = settlements.schematic_table[debug_building_index]
+			local built_house = {}
+			built_house.schematic_info = selected_building
+			built_house.pos = center_surface
+			built_house.rotation = "0"
+			built_house.surface_mat = c_dirt_with_grass
+			
+			local vm = minetest.get_voxel_manip()
+			local maxp = vector.add(center_surface, selected_building.schematic.size)
+			local emin, emax = vm:read_from_map(center_surface, maxp)
 
-				settlements.place_building(vm, built_house)
-				vm:write_to_map()
+			settlements.place_building(vm, built_house)
+			vm:write_to_map()
 
-				debug_building_index = debug_building_index + 1
-				if debug_building_index > #settlements.schematic_table then
-					debug_building_index = 1
-				end
+			debug_building_index = debug_building_index + 1
+			if debug_building_index > #settlements.schematic_table then
+				debug_building_index = 1
 			end
-		end,
+		end
+	end,
 	--
 	-- build settlement
 	--
@@ -229,5 +233,3 @@ minetest.register_craftitem("settlements:tool", {
 		end
 	end
 })
-
---settlements.mts_save()
