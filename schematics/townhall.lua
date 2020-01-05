@@ -24,14 +24,15 @@ local n23 = { name = "default:torch_wall", param2 = 4 }
 local n24 = { name = "doors:door_wood_a", param2 = 1 }
 local n25 = { name = "xpanes:pane_flat", param2 = 3 }
 local n26 = { name = "doors:hidden", param2 = 1 }
-local n27 = { name = "default:tree", param2 = 18 }
-local n28 = { name = "stairs:stair_junglewood", param2 = 3 }
-local n29 = { name = "default:fence_wood" }
-local n30 = { name = "stairs:stair_junglewood", param2 = 1 }
-local n31 = { name = "doors:trapdoor" }
-local n32 = { name = "default:tree", param2 = 2 }
-local n33 = { name = "default:tree", param2 = 22 }
-local n34 = { name = "stairs:stair_junglewood", param2 = 22 }
+local n27 = { name = "default:sign_wall_steel", param2 = 3 }
+local n28 = { name = "default:tree", param2 = 18 }
+local n29 = { name = "stairs:stair_junglewood", param2 = 3 }
+local n30 = { name = "default:fence_wood" }
+local n31 = { name = "stairs:stair_junglewood", param2 = 1 }
+local n32 = { name = "doors:trapdoor" }
+local n33 = { name = "default:tree", param2 = 2 }
+local n34 = { name = "default:tree", param2 = 22 }
+local n35 = { name = "stairs:stair_junglewood", param2 = 22 }
 
 return {
 	yslice_prob = {
@@ -178,7 +179,7 @@ return {
 		-- z=-5, y=-9
 		n2, n2, n25, n2, n2, n2, n2, n26, n2, n2, 
 		-- z=-5, y=-8
-		n2, n2, n7, n2, n2, n2, n2, n7, n2, n2, 
+		n2, n2, n7, n2, n2, n2, n2, n7, n27, n2, 
 		-- z=-5, y=-7
 		n2, n15, n7, n2, n2, n2, n2, n7, n17, n2, 
 		-- z=-5, y=-6
@@ -186,7 +187,7 @@ return {
 		-- z=-5, y=-5
 		n2, n7, n2, n2, n2, n2, n2, n2, n7, n2, 
 		-- z=-5, y=-4
-		n3, n9, n9, n9, n9, n9, n9, n27, n27, n4, 
+		n3, n9, n9, n9, n9, n9, n9, n28, n28, n4, 
 		-- z=-5, y=-3
 		n2, n3, n2, n2, n2, n2, n2, n2, n4, n2, 
 		-- z=-5, y=-2
@@ -224,9 +225,9 @@ return {
 		-- z=-3, y=-11
 		n1, n1, n11, n21, n21, n21, n21, n11, n1, n1, 
 		-- z=-3, y=-10
-		n2, n2, n7, n28, n29, n29, n30, n7, n2, n2, 
+		n2, n2, n7, n29, n30, n30, n31, n7, n2, n2, 
 		-- z=-3, y=-9
-		n2, n2, n7, n2, n31, n31, n2, n7, n2, n2, 
+		n2, n2, n7, n2, n32, n32, n2, n7, n2, n2, 
 		-- z=-3, y=-8
 		n2, n2, n7, n2, n2, n2, n2, n7, n2, n2, 
 		-- z=-3, y=-7
@@ -249,11 +250,11 @@ return {
 		-- z=-2, y=-11
 		n1, n1, n11, n11, n11, n11, n11, n11, n1, n1, 
 		-- z=-2, y=-10
-		n2, n2, n32, n7, n7, n7, n7, n32, n2, n2, 
-		-- z=-2, y=-9
-		n2, n2, n32, n7, n10, n10, n7, n33, n2, n2, 
-		-- z=-2, y=-8
 		n2, n2, n33, n7, n7, n7, n7, n33, n2, n2, 
+		-- z=-2, y=-9
+		n2, n2, n33, n7, n10, n10, n7, n34, n2, n2, 
+		-- z=-2, y=-8
+		n2, n2, n34, n7, n7, n7, n7, n34, n2, n2, 
 		-- z=-2, y=-7
 		n2, n15, n7, n7, n7, n7, n7, n7, n17, n2, 
 		-- z=-2, y=-6
@@ -280,13 +281,13 @@ return {
 		-- z=-1, y=-8
 		n2, n2, n2, n2, n2, n2, n2, n2, n2, n2, 
 		-- z=-1, y=-7
-		n2, n2, n34, n34, n34, n34, n34, n34, n2, n2, 
+		n2, n2, n35, n35, n35, n35, n35, n35, n2, n2, 
 		-- z=-1, y=-6
-		n2, n32, n7, n7, n7, n7, n7, n7, n12, n2, 
+		n2, n33, n7, n7, n7, n7, n7, n7, n12, n2, 
 		-- z=-1, y=-5
-		n2, n32, n7, n7, n7, n7, n7, n7, n12, n2, 
+		n2, n33, n7, n7, n7, n7, n7, n7, n12, n2, 
 		-- z=-1, y=-4
-		n3, n27, n9, n9, n9, n9, n9, n9, n9, n4, 
+		n3, n28, n9, n9, n9, n9, n9, n9, n9, n4, 
 		-- z=-1, y=-3
 		n2, n3, n7, n7, n10, n10, n7, n7, n4, n2, 
 		-- z=-1, y=-2

@@ -3,16 +3,6 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
 local c_dirt 						= minetest.get_content_id("default:dirt")
-local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
-local c_dirt_with_snow				= minetest.get_content_id("default:dirt_with_snow")
-local c_dirt_with_dry_grass			= minetest.get_content_id("default:dirt_with_dry_grass")
-local c_dirt_with_coniferous_litter = minetest.get_content_id("default:dirt_with_coniferous_litter")
-local c_dirt_with_rainforest_litter	= minetest.get_content_id("default:dirt_with_rainforest_litter")
-local c_dry_dirt					= minetest.get_content_id("default:dry_dirt")
-local c_dry_dirt_with_dry_grass		= minetest.get_content_id("default:dry_dirt_with_dry_grass")
-local c_sand						= minetest.get_content_id("default:sand")
-local c_desert_sand					= minetest.get_content_id("default:desert_sand")
-local c_silver_sand					= minetest.get_content_id("default:silver_sand")
 --
 local c_air							= minetest.get_content_id("air")
 local c_water_source				= minetest.get_content_id("default:water_source")
@@ -21,18 +11,10 @@ local c_water_flowing				= minetest.get_content_id("default:water_flowing")
 local c_stone						= minetest.get_content_id("default:stone")
 
 -- Allowable surface materials to build settlements on
-local surface_mat = {
-	[c_dirt_with_grass] = true,
-	[c_dirt_with_snow] = true,
-	[c_dirt_with_dry_grass] = true,
-	[c_dry_dirt_with_dry_grass] = true,
-	[c_dry_dirt] = true,
-	[c_dirt_with_coniferous_litter] = true,
-	[c_dirt_with_rainforest_litter] = true,
-	[c_sand] = true,
-	[c_desert_sand] = true,
-	[c_silver_sand] = true,
-}
+local surface_mat = {}
+for mat_name, _ in pairs(settlements.surface_mat) do
+	surface_mat[minetest.get_content_id(mat_name)] = true
+end
 
 -------------------------------------------------------------------------------
 -- function to fill empty space below baseplate when building on a hill
@@ -232,9 +214,9 @@ end
 --------------------------------------------------------------------------------
 local function create_site_plan(minp, maxp, data, va)
 	local possible_rotations = {"0", "90", "180", "270"}
+-- TODO an option here
 --	local possible_wallmaterials = wallmaterial
 	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
-
 	
 	-- find center of chunk
 	local center = {
@@ -248,13 +230,21 @@ local function create_site_plan(minp, maxp, data, va)
 	if not center_surface then
 		return nil
 	end
+	
+	-- Get a name for the settlement.
+	local name
+	if minetest.get_modpath("namegen") then
+		name = namegen.generate("settlement_towns")
+	end
+	
 	-- add settlement to list
 	table.insert(settlements.settlements_in_world, 
-		center_surface)
+		{pos=center_surface, name=name})
 	-- save list to file
 	settlements_save()
 
 	local settlement_info = {}
+	settlement_info.name = name
 	local number_of_buildings = math.random(10,25)
 	if settlements.debug == true then
 		minetest.chat_send_all("settlement ".. number_of_buildings)
@@ -373,13 +363,15 @@ local function initialize_nodes(settlement_info)
 			for xi = 0,width do
 				for zi = 0,depth do
 					local ptemp = {x=p.x+xi, y=p.y+yi, z=p.z+zi}
-					local node = minetest.get_node(ptemp) 
-					if node.name == "default:furnace" or
-						node.name == "default:chest" or
-						node.name == "default:bookshelf" or
-						node.name == "vessels:shelf"
-					then
-						minetest.registered_nodes[node.name].on_construct(ptemp)
+					local node = minetest.get_node(ptemp)
+					local node_def = minetest.registered_nodes[node.name]
+					if node_def.on_construct then
+						node_def.on_construct(ptemp)
+					end
+					if settlement_info.name and node.name == "default:sign_wall_steel" then
+						local meta = minetest.get_meta(ptemp)
+						meta:set_string("text", settlement_info.name .. " Town Hall")
+						meta:set_string("infotext", settlement_info.name .. " Town Hall")
 					end
 					-- when chest is found -> fill with stuff
 					if node.name == "default:chest" then

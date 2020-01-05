@@ -13,6 +13,10 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 dofile(modpath.."/const.lua")
 dofile(modpath.."/buildings.lua")
 
+if minetest.get_modpath("namegen") then
+	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
+end
+
 local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
@@ -20,9 +24,21 @@ local schematic_table = settlements.schematic_table
 local function settlements_load()
 	local file = io.open(minetest.get_worldpath().."/settlements.txt", "r")
 	if file then
-		local table = minetest.deserialize(file:read("*all"))
-		if type(table) == "table" then
-			return table
+		local settlements = minetest.deserialize(file:read("*all"))
+		if type(settlements) == "table" then
+			for _, settlement in ipairs(settlements) do
+				-- compatibility with older versions
+				if settlement.x ~= nil then
+					settlement.pos = vector.new(settlement)
+					settlement.x = nil
+					settlement.y = nil
+					settlement.z = nil
+				end
+				if settlement.name == nil and minetest.get_modpath("namegen") then
+					settlement.name = namegen.generate("settlement_towns")
+				end
+			end
+			return settlements
 		end
 	end
 	return {}
@@ -70,8 +86,8 @@ end
 -------------------------------------------------------------------------------
 local function check_distance_other_settlements(center_new_chunk)
 --	local min_dist_settlements = 300
-	for i, pos in ipairs(settlements.settlements_in_world) do 
-		local distance = vector.distance(center_new_chunk, pos)
+	for i, settlement in ipairs(settlements.settlements_in_world) do 
+		local distance = vector.distance(center_new_chunk, settlement.pos)
 --		minetest.chat_send_all("dist ".. distance)
 		if distance < settlements.min_dist_settlements then
 			return false

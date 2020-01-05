@@ -50,12 +50,12 @@ settlements.surface_mat = Set({
 	"default:dirt_with_snow",
 	"default:dirt_with_dry_grass",
 	"default:dirt_with_coniferous_litter",
+	"default:dirt_with_rainforest_litter",
 	"default:sand",
 	"default:silver_sand",
 	"default:desert_sand",
 	"default:snow_block"
 })
-
 --
 -- path to schematics
 --
@@ -66,17 +66,17 @@ local schem_path = modpath.."/schematics/"
 settlements.schematic_table = {
 	{
 		name = "townhall",
-		schematic = dofile(schem_path.."kingsmarket.lua"),
+		schematic = dofile(schem_path.."townhall.lua"),
 		hsize = 15, -- buffer space around the building, footprint is treated as this size for spacing purposes
 		max_num = 0, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
 	},
 	{
-		name = "library",
-		schematic = dofile(schem_path.."townhall.lua"),
-		hsize = 11, -- buffer space around the building, footprint is treated as this size for spacing purposes
-		max_num = 0.04, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
+		name = "kingsmarket",
+		schematic = dofile(schem_path.."kingsmarket.lua"),
+		hsize = 15, -- buffer space around the building, footprint is treated as this size for spacing purposes
+		max_num = 0.075, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
 	},
@@ -133,7 +133,7 @@ settlements.schematic_table = {
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
 		hsize = 11,
-		max_num = 0.050,
+		max_num = 0.05,
 		replace_wall = true
 	},
 }
