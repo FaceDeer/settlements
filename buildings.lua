@@ -310,8 +310,7 @@ local function create_site_plan(minp, maxp, data, va)
 			break
 		end
 	end
-	if settlements.debug == true
-	then
+	if settlements.debug then
 		minetest.chat_send_all("really ".. number_built)
 	end
 	
@@ -327,16 +326,13 @@ local function create_site_plan(minp, maxp, data, va)
 	return settlement_info
 end
 
-minetest.register_on_shutdown(function()
-	minetest.debug(dump(building_counts))
-end)
+if settlements.debug then
+	minetest.register_on_shutdown(function()
+		minetest.debug(dump(building_counts))
+	end)
+end
 
 local function fill_chest(pos)
-	-- initialize chest (mts chests don't have meta)
-	local meta = minetest.get_meta(pos)
-	if meta:get_string("infotext") ~= "Chest" then
-		minetest.registered_nodes["default:chest"].on_construct(pos)
-	end
 	-- fill chest
 	local inv = minetest.get_inventory( {type="node", pos=pos} )
 	-- always
@@ -361,6 +357,22 @@ local function fill_chest(pos)
 		inv:add_item("main", "fire:flint_and_steel "..math.random(0,1))
 		inv:add_item("main", "bucket:bucket_empty "..math.random(0,1))
 		inv:add_item("main", "default:sword_steel "..math.random(0,1))
+	end
+end
+
+local modpath = minetest.get_modpath("settlements")
+local source_texts = {
+	modpath.."/sourcetexts/gulliver.txt",
+	modpath.."/sourcetexts/caveregionsoftheozarksandblackhills.txt",
+}
+local function fill_shelf(pos, author)
+	local inv = minetest.get_inventory( {type="node", pos=pos} )
+	for i = 1, math.random(0, 5) do
+		local source_text = source_texts[math.random(1, #source_texts)]
+		local title = settlements.generate_line(source_text, math.random(3, 6))
+		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
+		local book = settlements.generate_book(source_text, title, author)
+		inv:add_item("books", book)
 	end
 end
 
@@ -390,6 +402,9 @@ local function initialize_nodes(settlement_info)
 					-- when chest is found -> fill with stuff
 					if node.name == "default:chest" then
 						minetest.after(3,fill_chest,ptemp)
+					end
+					if node.name == "default:bookshelf" then
+						minetest.after(3,fill_shelf,ptemp,"a resident of " .. settlement_info.name)
 					end
 					if minetest.get_item_group(node.name, "plant") > 0 then
 						minetest.get_node_timer(ptemp):start(1000) -- start crops growing

@@ -13,6 +13,7 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 dofile(modpath.."/const.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
+dofile(modpath.."/bookgen.lua")
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
@@ -148,11 +149,6 @@ end
 
 
 minetest.register_on_generated(function(minp, maxp)
-	-- randomly try to build settlements
---	if math.random() > 0.6 then
---		return
---	end
-
 	-- don't build settlement underground
 	if maxp.y < 0 then 
 		return 
