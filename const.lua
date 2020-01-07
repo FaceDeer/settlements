@@ -23,47 +23,27 @@ function settlements.mts_save()
 	print("Wrote: " .. filename)
 end
 
--- material to replace cobblestone with
-settlements.wallmaterial = {
-	"default:junglewood", 
-	"default:pine_wood", 
-	"default:wood", 
-	"default:aspen_wood", 
-	"default:acacia_wood",	 
-	"default:stonebrick", 
-	"default:cobble", 
-	"default:desert_stonebrick", 
-	"default:desert_cobble", 
-	"default:sandstone"
-}
 
-function Set (list)
-	local set = {}
-	for _, l in ipairs(list) do set[l] = true end
-	return set
+settlements.surface_materials = {}
+settlements.settlement_defs = {}
+
+settlements.register_settlement = function(settlement_type_name, settlement_def)
+	assert(not settlements.settlement_defs[settlement_type_name])
+	settlements.settlement_defs[settlement_type_name] = settlement_def
+	for _, material in ipairs(settlement_def.surface_materials) do
+		local c_mat = minetest.get_content_id(material)
+		local material_list = settlements.surface_materials[c_mat] or {}
+		settlements.surface_materials[c_mat] = material_list
+		table.insert(material_list, settlement_def)
+	end
 end
 
--- possible surfaces where buildings can be built
-settlements.surface_mat = Set({
-	"default:dirt_with_grass",
-	"default:dry_dirt_with_grass",
-	"default:dirt_with_snow",
-	"default:dirt_with_dry_grass",
-	"default:dirt_with_coniferous_litter",
-	"default:dirt_with_rainforest_litter",
-	"default:sand",
-	"default:silver_sand",
-	"default:desert_sand",
-	"default:snow_block"
-})
---
--- path to schematics
---
+
 local schem_path = modpath.."/schematics/"
 --
 -- list of schematics
 --
-settlements.schematic_table = {
+local schematic_table = {
 	{
 		name = "townhall",
 		schematic = dofile(schem_path.."townhall.lua"),
@@ -124,7 +104,7 @@ settlements.schematic_table = {
 }
 
 if minetest.get_modpath("commoditymarket") then
-	table.insert(settlements.schematic_table,
+	table.insert(schematic_table,
 	{
 		name = "kingsmarket",
 		schematic = dofile(schem_path.."kingsmarket.lua"),
@@ -133,7 +113,7 @@ if minetest.get_modpath("commoditymarket") then
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
 	})
-	table.insert(settlements.schematic_table,
+	table.insert(schematic_table,
 	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
@@ -143,4 +123,71 @@ if minetest.get_modpath("commoditymarket") then
 	})
 end
 
+
 settlements.half_map_chunk_size = 40
+
+
+local medieval_settlements = {
+	-- this settlement will be placed on nodes with this surface material type.
+	surface_materials = {
+		"default:dirt",
+		"default:dirt_with_grass",
+		"default:dry_dirt_with_grass",
+		"default:dirt_with_snow",
+		"default:dirt_with_dry_grass",
+		"default:dirt_with_coniferous_litter",
+		"default:dirt_with_rainforest_litter",
+		"default:sand",
+		"default:silver_sand",
+		"default:desert_sand",
+		"default:snow_block"
+	},
+	
+	-- TODO: add a biome list. The tricky part here is, what if a biome list but not a surface materials list is provided?
+	-- How to find the surface, and how to know what to replace surface material nodes with in the schematic?
+
+	-- nodes in schematics will be replaced with these nodes, or a randomly-selected node
+	-- from a list of choices if a list is provided
+	replace_general = {
+		["default:cobble"] = {
+			"default:junglewood", 
+			"default:pine_wood", 
+			"default:wood", 
+			"default:aspen_wood", 
+			"default:acacia_wood",	 
+			"default:stonebrick", 
+			"default:cobble", 
+			"default:desert_stonebrick", 
+			"default:desert_cobble", 
+			"default:sandstone",
+		},
+		["default:junglewood"] = "settlements:junglewood",
+	},
+	
+	-- This node will be replaced with the surface material of the location the building is placed on.
+	replace_with_surface_material = "default:dirt_with_grass",
+	
+	-- Trees often interfere with surface detection. These nodes will be ignored when detecting surface level.
+	ignore_surface_materials = {
+		"default:tree",
+		"default:jungletree",
+		"default:pine_tree",
+		"default:acacia_tree",
+		"default:aspen_tree",
+	},
+	
+	platform_shallow = "default:dirt",
+	platform_deep = "default:stone",
+	path_material = "default:gravel",
+	
+	schematics = schematic_table,
+	
+	generate_name = function(pos)
+		if minetest.get_modpath("namegen") then
+			return namegen.generate("settlement_towns")
+		end
+		return "Town"
+	end
+}
+
+settlements.register_settlement("medieval", medieval_settlements)

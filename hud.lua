@@ -84,3 +84,14 @@ minetest.register_chatcommand("settlements", {
 		end
 	end,
 })
+
+minetest.register_chatcommand("discoversettlements", {
+	decription = "Set all settlements as known to you",
+	privs = {["server"]=true},
+	func = function(name, param)
+		for _, settlement in ipairs(settlements.settlements_in_world) do
+			settlement.discovered_by[name] = true
+		end
+		settlements.settlements_save()
+	end,
+})

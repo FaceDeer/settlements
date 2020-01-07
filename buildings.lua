@@ -2,33 +2,25 @@ local wallmaterial = settlements.wallmaterial
 local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
-local c_dirt 						= minetest.get_content_id("default:dirt")
---
 local c_air							= minetest.get_content_id("air")
 local c_water_source				= minetest.get_content_id("default:water_source")
 local c_water_flowing				= minetest.get_content_id("default:water_flowing")
 
-local c_stone						= minetest.get_content_id("default:stone")
-
--- Allowable surface materials to build settlements on
-local surface_mat = {}
-for mat_name, _ in pairs(settlements.surface_mat) do
-	surface_mat[minetest.get_content_id(mat_name)] = true
-end
+local surface_mats = settlements.surface_materials
 
 -------------------------------------------------------------------------------
 -- function to fill empty space below baseplate when building on a hill
 -------------------------------------------------------------------------------
-local function ground(pos, data, va) -- role model: Wendelsteinkircherl, Brannenburg
+local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
 	--
 	local p2 = vector.new(pos)
 	local cnt = 0
-	local mat = c_dirt
+	local mat = c_shallow
 	p2.y = p2.y-1
 	while true do
 		cnt = cnt+1
 		if cnt > 20 then break end
-		if cnt > math.random(2,4) then mat = c_stone end
+		if cnt > math.random(2,4) then mat = c_deep end
 		local vi = va:index(p2.x, p2.y, p2.z)
 		data[vi] = mat
 		p2.y = p2.y-1
@@ -40,6 +32,8 @@ end
 -------------------------------------------------------------------------------
 local function terraform(data, va, settlement_info)
 	local c_air = minetest.get_content_id("air")
+	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or "default:dirt")
+	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or "default:stone")
 	local fheight
 	local fwidth
 	local fdepth
@@ -64,9 +58,8 @@ local function terraform(data, va, settlement_info)
 				for xi = 0,fwidth-1 do
 					if yi == 0 then
 						local p = {x=pos.x+xi, y=pos.y, z=pos.z+zi}
-						ground(p, data, va)
+						ground(p, data, va, c_shallow, c_deep)
 					else
-						-- write ground
 						local vi = va:index(pos.x+xi, pos.y+yi, pos.z+zi)
 						data[vi] = c_air
 					end
@@ -85,6 +78,16 @@ local buildable_to = function(c_node)
 			buildable_to_set[minetest.get_content_id(k)] = true
 		end
 	end
+	
+	-- TODO: some way to discriminate between settlement_defs? For now, apply ignore_materials universally.
+	for _, def in pairs(settlements.settlement_defs) do
+		if def.ignore_surface_materials then
+			for _, ignore_material in ipairs(def.ignore_surface_materials) do
+				buildable_to_set[minetest.get_content_id(ignore_material)] = true
+			end
+		end
+	end
+	
 	return buildable_to_set[c_node]
 end
 
@@ -119,7 +122,7 @@ local function find_surface(pos, data, va)
 				above_node, below_node = previous_node, next_node
 				above_vi, below_vi = previous_vi, next_vi
 			end
-			if above_node ~= c_water_source and above_node ~= c_water_flowing and surface_mat[below_node] then
+			if above_node ~= c_water_source and above_node ~= c_water_flowing and surface_mats[below_node] then
 				return va:position(below_vi), below_node
 			else
 				return nil
@@ -173,9 +176,9 @@ end
 -------------------------------------------------------------------------------
 -- everything necessary to pick a fitting next building
 -------------------------------------------------------------------------------
-local function pick_next_building(pos_surface, count_buildings, settlement_info)
+local function pick_next_building(pos_surface, count_buildings, settlement_info, settlement_def)
 	local number_of_buildings = settlement_info.number_of_buildings
-	local randomized_schematic_table = shuffle(schematic_table)
+	local randomized_schematic_table = shuffle(settlement_def.schematics)
 	-- pick schematic
 	local size = #randomized_schematic_table
 	for i = size, 1, -1 do
@@ -218,7 +221,7 @@ local function create_site_plan(minp, maxp, data, va)
 	local possible_rotations = {"0", "90", "180", "270"}
 -- TODO an option here
 --	local possible_wallmaterials = wallmaterial
-	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
+--	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
 	
 	-- find center of chunk
 	local center = {
@@ -228,29 +231,43 @@ local function create_site_plan(minp, maxp, data, va)
 	} 
 	-- find center_surface of chunk
 	local center_surface, surface_material = find_surface(center, data, va)
-	-- go build settlement around center
 	if not center_surface then
 		return nil
 	end
 	
+	-- get a list of all the settlement defs that can be made on this surface mat
+	local settlement_def = surface_mats[surface_material] 
+	 -- pick one at random
+	settlement_def = settlement_def[math.random(1, #settlement_def)]
+	
 	-- Get a name for the settlement.
-	local name
-	if minetest.get_modpath("namegen") then
-		name = namegen.generate("settlement_towns")
-	end
+	local name = settlement_def.generate_name(center)
 	
 	local settlement_info = {}
+	settlement_info.def = settlement_def
 	settlement_info.name = name
 	local number_of_buildings = math.random(10,25)
 	if settlements.debug == true then
 		minetest.chat_send_all("settlement ".. number_of_buildings)
 	end
 	settlement_info.number_of_buildings = number_of_buildings
+	
+	local replacements = {}
+	settlement_info.replacements = replacements
+	if settlement_def.replace_general then
+		for original, replacement in pairs(settlement_def.replace_general) do
+			if type(replacement) == "table" then
+				replacement = replacement[math.random(1, #replacement)]
+			end
+			replacements[original] = replacement
+		end
+	end
 
+	-- debugging variable
 	local count_buildings = {}
 	
 	-- first building is townhall in the center
-	local townhall = schematic_table[1]
+	local townhall = settlement_def.schematics[1]
 	local rotation = possible_rotations[ math.random( #possible_rotations ) ]
 	-- add to settlement info table
 	local number_built = 1
@@ -259,8 +276,9 @@ local function create_site_plan(minp, maxp, data, va)
 		schematic_info = townhall,
 		rotation = rotation,
 		surface_mat = surface_material,
-		wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
+--		wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 	}
+	-- debugging variable
 	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z, r = center_surface.x, center_surface.z, townhall.hsize
@@ -279,7 +297,7 @@ local function create_site_plan(minp, maxp, data, va)
 				-- Even though find_surface guards against underwater nodes, it's possible for mapgen to create
 				-- a temporary air pocket below the ocean's surface level so check absolute elevation here too
 				if pos_surface and pos_surface.y > -1 then
-					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info)
+					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info, settlement_def)
 					
 					-- TODO test if building fits inside va. Doesn't seem to be a problem for mapgen, but
 					-- sometimes the debugging tool cuts buildings at the edges of town. Maybe expand the debugging
@@ -293,7 +311,7 @@ local function create_site_plan(minp, maxp, data, va)
 							schematic_info = building_all_info,
 							rotation = rotation,
 							surface_mat = surface_material,
-							wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
+--							wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 						}
 						building_counts[building_all_info.name] = (building_counts[building_all_info.name] or 0) + 1
 						if number_of_buildings == number_built 
@@ -367,7 +385,7 @@ local source_texts = {
 }
 local function fill_shelf(pos, author)
 	local inv = minetest.get_inventory( {type="node", pos=pos} )
-	for i = 1, math.random(0, 5) do
+	for i = 1, math.random(2, 8) do
 		local source_text = source_texts[math.random(1, #source_texts)]
 		local title = settlements.generate_line(source_text, math.random(3, 6))
 		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
@@ -417,7 +435,7 @@ end
 
 -- generate paths between buildings
 local function paths(data, va, settlement_info)
-	local c_gravel = minetest.get_content_id("default:gravel")
+	local c_gravel = minetest.get_content_id(settlement_info.def.path_material or "default:gravel")
 	local starting_point
 	local end_point
 	local distance
@@ -505,7 +523,7 @@ local function paths(data, va, settlement_info)
 	end
 end
 
-function settlements.place_building(vm, built_house)
+function settlements.place_building(vm, built_house, settlement_info)
 	local building_all_info = built_house.schematic_info
 
 	local pos = built_house.pos
@@ -515,15 +533,14 @@ function settlements.place_building(vm, built_house)
 	local platform_material_name = minetest.get_name_from_content_id(platform_material)
 
 	local building_schematic = building_all_info.schematic
-	
 	local replacements = {}
-	
-	if building_all_info.replace_wall then
-		replacements["default:cobble"] = built_house.wall_mat
+	if building_all_info.replace_wall and settlement_info.replacements then
+		replacements = shallowCopy(settlement_info.replacements)
 	end
-	replacements["default:dirt_with_grass"] = platform_material_name
-	replacements["default:junglewood"] = "settlements:junglewood"
-
+	if settlement_info.def.replace_with_surface_material then
+		replacements[settlement_info.def.replace_with_surface_material] = platform_material_name
+	end
+	
 	if settlements.debug then
 		minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
 	end
@@ -555,7 +572,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	-- evaluate settlement_info and place schematics
 	vm:set_data(data)
 	for _, built_house in ipairs(settlement_info) do
-		settlements.place_building(vm, built_house)
+		settlements.place_building(vm, built_house, settlement_info)
 	end
 	vm:calc_lighting()
 	vm:write_to_map()

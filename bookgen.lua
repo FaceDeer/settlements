@@ -86,7 +86,7 @@ settlements.generate_line = function(source_text, maxgen)
 		w1, w2 = w2, nextword
 	end
 	
-	return table.concat(text_table, " ") .. "."
+	return table.concat(text_table, " ")
 end
 
 settlements.generate_book = function(source_text, title, owner)
@@ -94,7 +94,7 @@ settlements.generate_book = function(source_text, title, owner)
 	for i = 1, math.random(3,15) do
 		table.insert(text_table, settlements.generate_line(source_text))
 	end
-	local text = table.concat(text_table, "\n\n")
+	local text = table.concat(text_table, ".\n\n")
 	
 	local book = ItemStack("default:book_written")
 	local meta = book:get_meta()

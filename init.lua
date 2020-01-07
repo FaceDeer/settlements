@@ -183,9 +183,8 @@ local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
 minetest.register_craftitem("settlements:tool", {
 	description = "settlements build tool",
 	inventory_image = "default_tool_woodshovel.png",
-	--
 	-- build single house
-	--
+	-- TODO: broke this when implementing registered settlement defs, fix it
 	on_use = function(itemstack, placer, pointed_thing)
 		local center_surface = pointed_thing.under
 		if center_surface then
@@ -200,7 +199,8 @@ minetest.register_craftitem("settlements:tool", {
 			local maxp = vector.add(center_surface, selected_building.schematic.size)
 			local emin, emax = vm:read_from_map(center_surface, maxp)
 
-			settlements.place_building(vm, built_house)
+			settlements.place_building(vm, built_house, {})
+			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
 			vm:write_to_map()
 
 			debug_building_index = debug_building_index + 1
@@ -209,9 +209,7 @@ minetest.register_craftitem("settlements:tool", {
 			end
 		end
 	end,
-	--
 	-- build settlement
-	--
 	on_place = function(itemstack, placer, pointed_thing)
 		-- enable debug routines
 		settlements.debug = true
