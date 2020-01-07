@@ -71,8 +71,7 @@ settlements.generate_line = function(source_text, maxgen)
 	local statetab = statetabs[source_text]
 
 	-- generate text
-	w1 = NOWORD
-	w2 = NOWORD
+	local w1, w2 = NOWORD, NOWORD
 	local text_table = {}
 	for i = 1, maxgen do
 		local list = statetab[prefix(w1, w2)]
