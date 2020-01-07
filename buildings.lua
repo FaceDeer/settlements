@@ -107,7 +107,7 @@ local function find_surface(pos, data, va)
 	else
 		itter = 1 -- going up
 	end
-	for cnt = 0, 200 do
+	for cnt = 0, 100 do
 		local next_vi = previous_vi + va.ystride * itter
 		if not va:containsi(next_vi) then return nil end
 		local next_node = data[next_vi]
@@ -441,7 +441,6 @@ local function paths(data, va, settlement_info)
 	local distance
 	--for k,v in pairs(settlement_info) do
 	starting_point = settlement_info[1].pos
-	-- TODO may need to shuffle these
 	for i,built_house in ipairs(settlement_info) do
 
 		end_point = built_house.pos

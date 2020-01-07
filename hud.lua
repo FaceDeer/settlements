@@ -4,36 +4,61 @@ end
 
 local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 10 
 local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 200
+local test_interval = 5 -- check every test_interval seconds
+local displacement = {x=5, y=3, z=5} -- needed to put the marker in the center of town hall
 
-local player_huds = {} -- tracks only a single waypoint per player, if we want to show more will need revision
+local player_huds = {}
+-- Each player will have a table of [position_hash] = hud_id pairs in here
+
 local add_hud_marker = function(player, player_name, pos, label)
-	local existing_id = player_huds[player_name]
-	if existing_id ~= nil then
-		player:hud_change(existing_id, "name", label)
-		player:hud_change(existing_id, "world_pos", pos)
-	else
-		local hud_id = player:hud_add({
-			hud_elem_type = "waypoint",
-			name = label,
-			text = "m",
-			number = 0xFFFFFF,
-			world_pos = pos})
-		player_huds[player_name] = hud_id
-	end
+	local waypoints = player_huds[player_name] or {}
+	player_huds[player_name] = waypoints
+	local pos_hash = minetest.hash_node_position(pos)
+	if waypoints[pos_hash] then
+		return
+	end	
+	local hud_id = player:hud_add({
+		hud_elem_type = "waypoint",
+		name = label,
+		text = "m",
+		number = 0xFFFFFF,
+		world_pos = pos})
+	waypoints[pos_hash] = hud_id
 end
-local remove_hud_marker = function(player, player_name)
-	local id = player_huds[player_name]
-	if id ~= nil then
-		player:hud_remove(id)
+
+local remove_distant_hud_markers = function(visual_range)
+	local players_to_remove = {}
+	for player_name, waypoints in pairs(player_huds) do
+		local player = minetest.get_player_by_name(player_name)
+		if player then
+			local player_pos = player:get_pos()
+			local waypoints_to_remove = {}
+			for pos_hash, hud_id in pairs(waypoints) do
+				local pos = minetest.get_position_from_hash(pos_hash)
+				if vector.distance(pos, player_pos) > visual_range then
+					table.insert(waypoints_to_remove, pos_hash)
+					player:hud_remove(hud_id)
+				end
+			end
+			for _, pos_hash in ipairs(waypoints_to_remove) do
+				waypoints[pos_hash] = nil
+			end
+			if not next(waypoints) then -- player's waypoint list is empty, remove it
+				table.insert(players_to_remove, player_name)
+			end
+		else
+			table.insert(players_to_remove, player_name)
+		end
+	end
+	for _, player_name in ipairs(players_to_remove) do
 		player_huds[player_name] = nil
 	end
 end
 
 local elapsed = 0
-local displacement = {x=5, y=3, z=5}
 minetest.register_globalstep(function(dtime)
 	elapsed = elapsed + dtime
-	if elapsed < 5 then
+	if elapsed < test_interval then
 		return
 	end
 	elapsed = 0
@@ -44,7 +69,6 @@ minetest.register_globalstep(function(dtime)
 	for _, player in ipairs(connected_players) do
 		local player_pos = player:get_pos()
 		local player_name = player:get_player_name()
-		local found_visible = false
 		for _, settlement in ipairs(settlements.settlements_in_world) do
 			local discovered_by = settlement.discovered_by
 			local settlement_pos = vector.add(settlement.pos, displacement)
@@ -56,19 +80,16 @@ minetest.register_globalstep(function(dtime)
 			if not found_visible and distance < visual_range and discovered_by[player_name] then
 				local settlement_name = settlement.name or "Town"
 				add_hud_marker(player, player_name, settlement_pos, settlement_name)
-				found_visible = true		
 			end			
 		end
-		if not found_visible then
-			remove_hud_marker(player, player_name)
-		end
 	end
+	remove_distant_hud_markers(visual_range)
 	if new_discovery then
 		settlements.settlements_save()
 	end
 end)
 
-minetest.register_chatcommand("settlements", {
+minetest.register_chatcommand("settlements_list", {
 	decription = "List the settlements you know about",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -85,12 +106,31 @@ minetest.register_chatcommand("settlements", {
 	end,
 })
 
-minetest.register_chatcommand("discoversettlements", {
-	decription = "Set all settlements as known to you",
+minetest.register_chatcommand("settlements_discover", {
+	decription = "Set all settlements as known",
+	param = "player_name, or nothing for yourself",
 	privs = {["server"]=true},
 	func = function(name, param)
+		if param ~= "" then
+			name = param
+		end
 		for _, settlement in ipairs(settlements.settlements_in_world) do
 			settlement.discovered_by[name] = true
+		end
+		settlements.settlements_save()
+	end,
+})
+
+minetest.register_chatcommand("settlements_undiscover", {
+	decription = "Set all settlements as unknown to you",
+	param = "player_name, or nothing for yourself",
+	privs = {["server"]=true},
+	func = function(name, param)
+		if param ~= "" then
+			name = param
+		end
+		for _, settlement in ipairs(settlements.settlements_in_world) do
+			settlement.discovered_by[name] = nil
 		end
 		settlements.settlements_save()
 	end,
