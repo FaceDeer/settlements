@@ -481,7 +481,7 @@ function settlements.place_building(vm, built_house, settlement_info)
 
 	local building_schematic = building_all_info.schematic
 	local replacements = {}
-	if building_all_info.replace_wall and settlement_info.replacements then
+	if building_all_info.replace_nodes and settlement_info.replacements then
 		replacements = shallowCopy(settlement_info.replacements)
 	end
 	if settlement_info.def.replace_with_surface_material then
@@ -514,7 +514,9 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	terraform(data, va, settlement_info)
 
 	-- evaluate settlement_info and build paths between buildings
-	paths(data, va, settlement_info)
+	if settlement_info.def.path_material then
+		paths(data, va, settlement_info)
+	end
 
 	-- evaluate settlement_info and place schematics
 	vm:set_data(data)

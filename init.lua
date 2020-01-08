@@ -17,10 +17,6 @@ dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
 dofile(modpath.."/bookgen.lua")
 
-if minetest.get_modpath("namegen") then
-	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
-end
-
 local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
