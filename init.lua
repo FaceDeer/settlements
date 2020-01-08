@@ -148,7 +148,7 @@ end
 
 minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlement underground
-	if maxp.y < 0 then 
+	if maxp.y < -100 then 
 		return 
 	end
 

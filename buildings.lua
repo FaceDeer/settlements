@@ -3,8 +3,6 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
 local c_air							= minetest.get_content_id("air")
-local c_water_source				= minetest.get_content_id("default:water_source")
-local c_water_flowing				= minetest.get_content_id("default:water_flowing")
 
 local surface_mats = settlements.surface_materials
 
@@ -95,8 +93,10 @@ end
 -------------------------------------------------------------------------------
 -- function to find surface block y coordinate
 -------------------------------------------------------------------------------
-local function find_surface(pos, data, va)
+local function find_surface(pos, data, va, altitude_min, altitude_max)
 	if not va:containsp(pos) then return nil end
+	
+	local y = pos.y
 	
 	-- starting point for looking for surface
 	local previous_vi = va:indexp(pos)
@@ -109,6 +109,11 @@ local function find_surface(pos, data, va)
 	end
 	for cnt = 0, 100 do
 		local next_vi = previous_vi + va.ystride * itter
+		y = y + itter
+		if (altitude_min and altitude_min > y) or (altitude_max and altitude_max < y) then
+			-- an altitude range was specified and we're outside it
+			return nil
+		end		
 		if not va:containsi(next_vi) then return nil end
 		local next_node = data[next_vi]
 		if buildable_to(previous_node) ~= buildable_to(next_node) then
@@ -122,7 +127,7 @@ local function find_surface(pos, data, va)
 				above_node, below_node = previous_node, next_node
 				above_vi, below_vi = previous_vi, next_vi
 			end
-			if above_node ~= c_water_source and above_node ~= c_water_flowing and surface_mats[below_node] then
+			if surface_mats[below_node] then
 				return va:position(below_vi), below_node
 			else
 				return nil
@@ -218,7 +223,7 @@ local settlement_sizes = {}
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
-local function create_site_plan(minp, maxp, data, va)
+local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	local possible_rotations = {"0", "90", "180", "270"}
 -- TODO an option here
 --	local possible_wallmaterials = wallmaterial
@@ -237,9 +242,22 @@ local function create_site_plan(minp, maxp, data, va)
 	end
 	
 	-- get a list of all the settlement defs that can be made on this surface mat
-	local settlement_def = surface_mats[surface_material] 
+	local material_defs = surface_mats[surface_material]
+	local settlement_defs = {}
+	-- cull out any that have altitude min/max set outside the range of the chunk
+	for _, def in ipairs(material_defs) do
+		if (not def.altitude_min or def.altitude_min < maxp.y) and
+			(not def.altitude_max or def.altitude_max > minp.y) then
+			table.insert(settlement_defs, def)
+		end
+	end
+	-- Nothing to pick from
+	if #settlement_defs == 0 then
+		return nil
+	end
+	
 	 -- pick one at random
-	settlement_def = settlement_def[math.random(1, #settlement_def)]
+	settlement_def = settlement_defs[math.random(1, #settlement_defs)]
 	
 	-- Get a name for the settlement.
 	local name = settlement_def.generate_name(center)
@@ -277,7 +295,6 @@ local function create_site_plan(minp, maxp, data, va)
 		schematic_info = townhall,
 		rotation = rotation,
 		surface_mat = surface_material,
---		wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 	}
 	-- debugging variable
 	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
@@ -293,11 +310,9 @@ local function create_site_plan(minp, maxp, data, va)
 				ptx = math.floor(ptx + 0.5) -- round
 				ptz = math.floor(ptz + 0.5)
 				local pos1 = { x=ptx, y=center_surface.y, z=ptz}
-				--
-				local pos_surface, surface_material = find_surface(pos1, data, va)
-				-- Even though find_surface guards against underwater nodes, it's possible for mapgen to create
-				-- a temporary air pocket below the ocean's surface level so check absolute elevation here too
-				if pos_surface and pos_surface.y > -1 then
+
+				local pos_surface, surface_material = find_surface(pos1, data, va, settlement_def.altitude_min, settlement_def.altitude_max)
+				if pos_surface then
 					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info, settlement_def)
 					
 					-- TODO test if building fits inside va. Doesn't seem to be a problem for mapgen, but
@@ -312,7 +327,6 @@ local function create_site_plan(minp, maxp, data, va)
 							schematic_info = building_all_info,
 							rotation = rotation,
 							surface_mat = surface_material,
---							wall_mat = possible_wallmaterials[math.random(#possible_wallmaterials)]
 						}
 						building_counts[building_all_info.name] = (building_counts[building_all_info.name] or 0) + 1
 						if number_of_buildings == number_built 

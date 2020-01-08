@@ -255,6 +255,9 @@ local medieval_settlements = {
 	building_count_min = 5,
 	building_count_max = 25,
 	
+	altitude_min = 1,
+	altitude_max = 300,
+	
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("settlement_towns")
@@ -279,7 +282,10 @@ local inuit_settlements = {
 	platform_deep = "default:ice",
 	
 	building_count_min = 3,
-	building_count_max = 7,
+	building_count_max = 9,
+	
+--	altitude_min = 1,
+--	altitude_max = 300,
 	
 	schematics = {
 		{
@@ -288,8 +294,9 @@ local inuit_settlements = {
 			hsize = 9,
 			max_num = 1,
 			initialize_node = initialize_node,
-		},	
+		},
 	},
+	
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("inuit_camps")
