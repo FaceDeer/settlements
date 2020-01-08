@@ -3,6 +3,8 @@ settlements = {}
 -- switch for debugging
 settlements.debug = false
 
+settlements.half_map_chunk_size = 40
+
 -- Minimum distance between settlements
 settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
 -- maximum allowed difference in height for building a settlement

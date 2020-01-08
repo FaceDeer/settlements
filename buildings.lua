@@ -213,6 +213,7 @@ function settlements.settlements_save()
 end
 
 local building_counts = {}
+local settlement_sizes = {}
 
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
@@ -243,19 +244,19 @@ local function create_site_plan(minp, maxp, data, va)
 	-- Get a name for the settlement.
 	local name = settlement_def.generate_name(center)
 	
+	local min_number = settlement_def.building_count_min or 5
+	local max_number = settlement_def.building_count_max or 25
+	
 	local settlement_info = {}
 	settlement_info.def = settlement_def
 	settlement_info.name = name
-	local number_of_buildings = math.random(10,25)
-	if settlements.debug == true then
-		minetest.chat_send_all("settlement ".. number_of_buildings)
-	end
+	local number_of_buildings = math.random(min_number, max_number)
 	settlement_info.number_of_buildings = number_of_buildings
 	
 	local replacements = {}
 	settlement_info.replacements = replacements
-	if settlement_def.replace_general then
-		for original, replacement in pairs(settlement_def.replace_general) do
+	if settlement_def.replacements then
+		for original, replacement in pairs(settlement_def.replacements) do
 			if type(replacement) == "table" then
 				replacement = replacement[math.random(1, #replacement)]
 			end
@@ -282,12 +283,12 @@ local function create_site_plan(minp, maxp, data, va)
 	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z, r = center_surface.x, center_surface.z, townhall.hsize
-	-- draw j circles around center and increase radius by math.random(2,5)
-	for j = 1,20 do
+	-- draw circles around center and increase radius by math.random(2,5)
+	for circle = 1,20 do
 		if number_built < number_of_buildings	then 
 			-- set position on imaginary circle
-			for j = 0, 360, 15 do
-				local angle = j * math.pi / 180
+			for angle_step = 0, 360, 15 do
+				local angle = angle_step * math.pi / 180
 				local ptx, ptz = x + r * math.cos( angle ), z + r * math.sin( angle )
 				ptx = math.floor(ptx + 0.5) -- round
 				ptz = math.floor(ptz + 0.5)
@@ -329,8 +330,10 @@ local function create_site_plan(minp, maxp, data, va)
 		end
 	end
 	if settlements.debug then
-		minetest.chat_send_all("really ".. number_built)
+		minetest.chat_send_all("built ".. number_built .. " out of " .. number_of_buildings)
 	end
+	-- debugging
+	settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
 	
 	if number_built == 1 then
 		return nil
@@ -344,55 +347,12 @@ local function create_site_plan(minp, maxp, data, va)
 	return settlement_info
 end
 
-if settlements.debug then
+--if settlements.debug then
 	minetest.register_on_shutdown(function()
 		minetest.debug(dump(building_counts))
+		minetest.debug(dump(settlement_sizes))
 	end)
-end
-
-local function fill_chest(pos)
-	-- fill chest
-	local inv = minetest.get_inventory( {type="node", pos=pos} )
-	-- always
-	inv:add_item("main", "default:apple "..math.random(1,3))
-	-- low value items
-	if math.random(0,1) < 1 then
-		inv:add_item("main", "farming:bread "..math.random(0,3))
-		inv:add_item("main", "default:steel_ingot "..math.random(0,3))
-		-- additional fillings when farmin mod enabled
-		if minetest.get_modpath("farming") ~= nil and farming.mod == "redo" then
-			if math.random(0,1) < 1 then
-				inv:add_item("main", "farming:melon_slice "..math.random(0,3))
-				inv:add_item("main", "farming:carrot "..math.random(0,3))
-				inv:add_item("main", "farming:corn "..math.random(0,3))
-			end
-		end
-	end
-	-- medium value items
-	if math.random(0,3) < 1 then
-		inv:add_item("main", "default:pick_steel "..math.random(0,1))
-		inv:add_item("main", "default:pick_bronze "..math.random(0,1))
-		inv:add_item("main", "fire:flint_and_steel "..math.random(0,1))
-		inv:add_item("main", "bucket:bucket_empty "..math.random(0,1))
-		inv:add_item("main", "default:sword_steel "..math.random(0,1))
-	end
-end
-
-local modpath = minetest.get_modpath("settlements")
-local source_texts = {
-	modpath.."/sourcetexts/gulliver.txt",
-	modpath.."/sourcetexts/caveregionsoftheozarksandblackhills.txt",
-}
-local function fill_shelf(pos, author)
-	local inv = minetest.get_inventory( {type="node", pos=pos} )
-	for i = 1, math.random(2, 8) do
-		local source_text = source_texts[math.random(1, #source_texts)]
-		local title = settlements.generate_line(source_text, math.random(3, 6))
-		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
-		local book = settlements.generate_book(source_text, title, author)
-		inv:add_item("books", book)
-	end
-end
+--end
 
 local function initialize_nodes(settlement_info)
 	for i, built_house in ipairs(settlement_info) do
@@ -412,20 +372,8 @@ local function initialize_nodes(settlement_info)
 					if node_def.on_construct then
 						node_def.on_construct(ptemp)
 					end
-					if settlement_info.name and node.name == "default:sign_wall_steel" then
-						local meta = minetest.get_meta(ptemp)
-						meta:set_string("text", settlement_info.name .. " Town Hall")
-						meta:set_string("infotext", settlement_info.name .. " Town Hall")
-					end
-					-- when chest is found -> fill with stuff
-					if node.name == "default:chest" then
-						minetest.after(3,fill_chest,ptemp)
-					end
-					if node.name == "default:bookshelf" then
-						minetest.after(3,fill_shelf,ptemp,"a resident of " .. settlement_info.name)
-					end
-					if minetest.get_item_group(node.name, "plant") > 0 then
-						minetest.get_node_timer(ptemp):start(1000) -- start crops growing
+					if built_house.schematic_info.initialize_node then
+						built_house.schematic_info.initialize_node(ptemp, node, node_def, settlement_info)
 					end
 				end
 			end

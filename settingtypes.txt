@@ -3,5 +3,5 @@ settlements_maximum_height_difference (Maximum ground height difference allowed 
 
 [HUD display]
 settlements_show_in_hud (Show settlement names in HUD) bool true
-settlements_discovery_range (Settlement discovery range) int 10
-settlements_visibility_range (Settlement visibility range) int 200
+settlements_discovery_range (Settlement discovery range) int 15
+settlements_visibility_range (Settlement visibility range) int 300

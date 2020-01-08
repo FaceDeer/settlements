@@ -38,6 +38,71 @@ settlements.register_settlement = function(settlement_type_name, settlement_def)
 	end
 end
 
+----------------------------------------------------------------------------------------------------------------
+
+local function fill_chest(pos)
+	-- fill chest
+	local inv = minetest.get_inventory( {type="node", pos=pos} )
+	-- always
+	inv:add_item("main", "default:apple "..math.random(1,3))
+	-- low value items
+	if math.random(0,1) < 1 then
+		inv:add_item("main", "farming:bread "..math.random(0,3))
+		inv:add_item("main", "default:steel_ingot "..math.random(0,3))
+		-- additional fillings when farming mod enabled
+		if minetest.get_modpath("farming") ~= nil and farming.mod == "redo" then
+			if math.random(0,1) < 1 then
+				inv:add_item("main", "farming:melon_slice "..math.random(0,3))
+				inv:add_item("main", "farming:carrot "..math.random(0,3))
+				inv:add_item("main", "farming:corn "..math.random(0,3))
+			end
+		end
+	end
+	-- medium value items
+	if math.random(0,3) < 1 then
+		inv:add_item("main", "default:pick_steel "..math.random(0,1))
+		inv:add_item("main", "default:pick_bronze "..math.random(0,1))
+		inv:add_item("main", "fire:flint_and_steel "..math.random(0,1))
+		inv:add_item("main", "bucket:bucket_empty "..math.random(0,1))
+		inv:add_item("main", "default:sword_steel "..math.random(0,1))
+	end
+end
+
+local source_texts = {
+	modpath.."/sourcetexts/gulliver.txt",
+	modpath.."/sourcetexts/caveregionsoftheozarksandblackhills.txt",
+}
+
+local function fill_shelf(pos, author)
+	local inv = minetest.get_inventory( {type="node", pos=pos} )
+	for i = 1, math.random(2, 8) do
+		local source_text = source_texts[math.random(1, #source_texts)]
+		local title = settlements.generate_line(source_text, math.random(3, 6))
+		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
+		local book = settlements.generate_book(source_text, title, author)
+		inv:add_item("books", book)
+	end
+end
+
+local initialize_node = function(pos, node, node_def, settlement_info)
+	if settlement_info.name and node.name == "default:sign_wall_steel" then
+		local meta = minetest.get_meta(pos)
+		meta:set_string("text", settlement_info.name .. " Town Hall")
+		meta:set_string("infotext", settlement_info.name .. " Town Hall")
+	end
+				-- when chest is found -> fill with stuff
+	if node.name == "default:chest" then
+		fill_chest(pos)
+	end
+	if node.name == "default:bookshelf" then
+		fill_shelf(pos, "a resident of " .. settlement_info.name)
+	end
+	if minetest.get_item_group(node.name, "plant") > 0 then
+		minetest.get_node_timer(pos):start(1000) -- start crops growing
+	end
+end
+
+----------------------------------------------------------------------------------------
 
 local schem_path = modpath.."/schematics/"
 --
@@ -50,56 +115,59 @@ local schematic_table = {
 		hsize = 15, -- buffer space around the building, footprint is treated as this size for spacing purposes
 		max_num = 0, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
-		replace_wall = true -- If true, default:cobble will be replaced with a random wall material
+		replace_wall = true, -- If true, default:cobble will be replaced with a random wall material
+		initialize_node = initialize_node, -- allows additional post-creation actions to be executed on schematic nodes once they're constructed
 	},
 	{
 		name = "well",
 		schematic = dofile(schem_path.."well.lua"),
 		hsize = 11,
 		max_num = 0.045,
-		replace_wall = false
+		replace_wall = false,
 	},
 	{
 		name = "hut",
 		schematic = dofile(schem_path.."hut.lua"),
 		hsize = 11,
 		max_num = 0.9,
-		replace_wall = true
+		replace_wall = true,
+		initialize_node = initialize_node,
 	},
 	{
 		name = "garden",
 		schematic = dofile(schem_path.."garden.lua"),
 		hsize = 11,
 		max_num = 0.1,
-		replace_wall = false
+		replace_wall = false,
+		initialize_node = initialize_node,
 	},
 	{
 		name = "lamp",
 		schematic = dofile(schem_path.."lamp.lua"),
 		hsize = 10,
 		max_num = 0.05,
-		replace_wall = false
+		replace_wall = false,
 	},
 	{
 		name = "tower",
 		schematic = dofile(schem_path.."tower.lua"),
 		hsize = 11,
 		max_num = 0.055,
-		replace_wall = false
+		replace_wall = false,
 	},
 	{
 		name = "church",
 		schematic = dofile(schem_path.."church.lua"),
 		hsize = 15,
 		max_num = 0.075,
-		replace_wall = false
+		replace_wall = false,
 	},
 	{
 		name = "blacksmith",
 		schematic = dofile(schem_path.."blacksmith.lua"),
 		hsize = 11,
 		max_num = 0.050,
-		replace_wall = false
+		replace_wall = false,
 	},
 }
 
@@ -123,10 +191,6 @@ if minetest.get_modpath("commoditymarket") then
 	})
 end
 
-
-settlements.half_map_chunk_size = 40
-
-
 local medieval_settlements = {
 	-- this settlement will be placed on nodes with this surface material type.
 	surface_materials = {
@@ -148,7 +212,7 @@ local medieval_settlements = {
 
 	-- nodes in schematics will be replaced with these nodes, or a randomly-selected node
 	-- from a list of choices if a list is provided
-	replace_general = {
+	replacements = {
 		["default:cobble"] = {
 			"default:junglewood", 
 			"default:pine_wood", 
@@ -182,12 +246,15 @@ local medieval_settlements = {
 	
 	schematics = schematic_table,
 	
+	building_count_min = 5,
+	building_count_max = 25,
+	
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("settlement_towns")
 		end
 		return "Town"
-	end
+	end,
 }
 
 settlements.register_settlement("medieval", medieval_settlements)

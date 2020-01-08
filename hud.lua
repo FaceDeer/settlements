@@ -2,8 +2,8 @@ if not minetest.settings:get_bool("settlements_show_in_hud", true) then
 	return
 end
 
-local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 10 
-local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 200
+local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 15 
+local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 300
 local test_interval = 5 -- check every test_interval seconds
 local displacement = {x=5, y=3, z=5} -- needed to put the marker in the center of town hall
 
@@ -76,6 +76,14 @@ minetest.register_globalstep(function(dtime)
 			if distance < discovery_range and not discovered_by[player_name] then
 				discovered_by[player_name] = true
 				new_discovery = true
+				local discovery_note = "You've discovered " .. (settlement.name or "a settlement") .. "!"
+				local formspec = "size[4,1]" ..
+					"label[1.0,0.0;" .. minetest.formspec_escape(discovery_note) ..
+					"]button_exit[0.5,0.75;3,0.5;btn_ok;".. "OK" .."]"				
+				minetest.show_formspec(player_name, "settlements:discovery_popup",
+					formspec)
+				minetest.chat_send_player(player_name, discovery_note)
+				minetest.sound_play({name = "settlements_chime01", gain = 0.25}, {to_player=player_name})
 			end
 			if not found_visible and distance < visual_range and discovered_by[player_name] then
 				local settlement_name = settlement.name or "Town"
