@@ -5,6 +5,9 @@ settlements.debug = false
 
 settlements.half_map_chunk_size = 40
 
+settlements.surface_materials = {}
+settlements.settlement_defs = {}
+
 -- Minimum distance between settlements
 settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
 -- maximum allowed difference in height for building a settlement
@@ -12,13 +15,48 @@ settlements.max_height_difference = tonumber(minetest.settings:get("settlements_
 
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
-dofile(modpath.."/const.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
 dofile(modpath.."/bookgen.lua")
 
-local half_map_chunk_size = settlements.half_map_chunk_size
-local schematic_table = settlements.schematic_table
+settlements.register_settlement = function(settlement_type_name, settlement_def)
+	assert(not settlements.settlement_defs[settlement_type_name])
+	settlements.settlement_defs[settlement_type_name] = settlement_def
+	for _, material in ipairs(settlement_def.surface_materials) do
+		local c_mat = minetest.get_content_id(material)
+		local material_list = settlements.surface_materials[c_mat] or {}
+		settlements.surface_materials[c_mat] = material_list
+		table.insert(material_list, settlement_def)
+	end
+end
+
+dofile(modpath.."/const.lua")
+
+-- Interconverting lua and mts formatted schematics
+-- Useful for modders adding existing schematics that are in mts format
+function settlements.convert_mts_to_lua(schem_path)
+	local str = minetest.serialize_schematic(schem_path, "lua", {lua_use_comments = true})
+	local file = io.open(schem_path:sub(1,-4).."lua", "w")
+	file:write(str.."\nreturn schematic")
+	file:close()
+end
+
+function settlements.mts_save()
+
+	local schematic2 = dofile(schem_path.."kingsmarket.lua")
+	local seb = minetest.serialize_schematic(schematic2, "mts", {})
+	local filename = schem_path .. "kingsmarket.mts"
+	--filename = filename:gsub("\"", "\\\""):gsub("\\", "\\\\")
+	local file, err = io.open(filename, "wb")
+	if err == nil and seb then
+		file:write(seb)
+		file:flush()
+		file:close()
+	end
+	print("Wrote: " .. filename)
+end
+
+----------------------------------------------------------------------------
 
 -- load list of generated settlements
 local function settlements_load()
@@ -81,7 +119,7 @@ if minetest.get_modpath("mobs_npc") ~= nil then
 		2, --active_object_count
 		31000, --max_height
 		nil)--day_toggle
-end 
+end
 
 
 -------------------------------------------------------------------------------
@@ -89,7 +127,7 @@ end
 -------------------------------------------------------------------------------
 local function check_distance_other_settlements(center_new_chunk)
 --	local min_dist_settlements = 300
-	for i, settlement in ipairs(settlements.settlements_in_world) do 
+	for i, settlement in ipairs(settlements.settlements_in_world) do
 		local distance = vector.distance(center_new_chunk, settlement.pos)
 --		minetest.chat_send_all("dist ".. distance)
 		if distance < settlements.min_dist_settlements then
@@ -133,7 +171,7 @@ local function evaluate_heightmap(heightmap)
 	-- return the difference between highest and lowest pos in chunk
 	local height_diff = max_y - min_y
 	-- filter buggy heightmaps
-	if height_diff <= 1 
+	if height_diff <= 1
 	then
 		return settlements.max_height_difference + 1
 	end
@@ -145,17 +183,18 @@ local function evaluate_heightmap(heightmap)
 	return height_diff
 end
 
+local half_map_chunk_size = settlements.half_map_chunk_size
 
 minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlement underground
-	if maxp.y < -100 then 
-		return 
+	if maxp.y < -100 then
+		return
 	end
 
 	-- don't build settlements too close to each other
 	local center_of_chunk = vector.subtract(maxp, half_map_chunk_size)
 	local dist_ok = check_distance_other_settlements(center_of_chunk)
-	if dist_ok == false 
+	if dist_ok == false
 	then
 		return
 	end
@@ -163,7 +202,7 @@ minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlements on (too) uneven terrain
 	local heightmap = minetest.get_mapgen_object("heightmap")
 	local height_difference = evaluate_heightmap(heightmap)
-	if height_difference > settlements.max_height_difference 
+	if height_difference > settlements.max_height_difference
 	then
 		return
 	end
@@ -175,8 +214,25 @@ minetest.register_on_generated(function(minp, maxp)
 end)
 
 
-local debug_building_index = 1
+local debug_building_index = 0
 local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
+local all_schematics
+local function get_next_debug_building()
+	if not all_schematics then
+		all_schematics = {}
+		for _, settlement_def in pairs(settlements.settlement_defs) do
+			for _, building_info in ipairs(settlement_def.schematics) do
+				table.insert(all_schematics, building_info)
+			end
+		end
+	end
+	debug_building_index = debug_building_index + 1
+	if debug_building_index > #all_schematics then
+		debug_building_index = 1
+	end
+	return all_schematics[debug_building_index]
+end
+
 -- manually place buildings, for debugging only
 minetest.register_craftitem("settlements:tool", {
 	description = "settlements build tool",
@@ -186,10 +242,11 @@ minetest.register_craftitem("settlements:tool", {
 	on_use = function(itemstack, placer, pointed_thing)
 		local center_surface = pointed_thing.under
 		if center_surface then
-			local selected_building = settlements.schematic_table[debug_building_index]
+			local selected_building = get_next_debug_building()
 			local built_house = {}
 			built_house.schematic_info = selected_building
-			built_house.pos = center_surface
+			built_house.center_pos = center_surface -- we're not terraforming so this doesn't matter
+			built_house.build_pos = center_surface
 			built_house.rotation = "0"
 			built_house.surface_mat = c_dirt_with_grass
 			
@@ -197,14 +254,10 @@ minetest.register_craftitem("settlements:tool", {
 			local maxp = vector.add(center_surface, selected_building.schematic.size)
 			local emin, emax = vm:read_from_map(center_surface, maxp)
 
-			settlements.place_building(vm, built_house, {})
+			settlements.place_building(vm, built_house, {def={}})
 			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
 			vm:write_to_map()
 
-			debug_building_index = debug_building_index + 1
-			if debug_building_index > #settlements.schematic_table then
-				debug_building_index = 1
-			end
 		end
 	end,
 	-- build settlement

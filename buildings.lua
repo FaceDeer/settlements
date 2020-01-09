@@ -2,13 +2,11 @@ local wallmaterial = settlements.wallmaterial
 local half_map_chunk_size = settlements.half_map_chunk_size
 local schematic_table = settlements.schematic_table
 
-local c_air							= minetest.get_content_id("air")
+local c_air = minetest.get_content_id("air")
 
 local surface_mats = settlements.surface_materials
 
--------------------------------------------------------------------------------
 -- function to fill empty space below baseplate when building on a hill
--------------------------------------------------------------------------------
 local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
 	--
 	local p2 = vector.new(pos)
@@ -25,9 +23,18 @@ local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelste
 	end
 end
 
--------------------------------------------------------------------------------
--- function clear space above baseplate 
--------------------------------------------------------------------------------
+-- for displacing building schematic positions so that they're more centered
+local function get_corner_pos(center_pos, schematic, rotation)
+	local pos = center_pos
+	local size = vector.new(schematic.size)
+	size.y = 0
+	if rotation == "90" or rotation == "270" then
+		size.z, size.x = size.x, size.y
+	end
+	return vector.subtract(pos, vector.round(vector.divide(size, 2)))
+end
+
+-- function clear space above baseplate
 local function terraform(data, va, settlement_info)
 	local replace_air = settlement_info.def.platform_clear_above
 	if replace_air == nil then
@@ -40,18 +47,19 @@ local function terraform(data, va, settlement_info)
 	local fwidth
 	local fdepth
 
-	for i, built_house in ipairs(settlement_info) do
+	for _, built_house in ipairs(settlement_info) do
 		local schematic_data = built_house.schematic_info
-		local pos = settlement_info[i].pos
-		if settlement_info[i].rotation == "0" or settlement_info[i].rotation == "180" 
+		local size = schematic_data.schematic.size
+		local pos = built_house.build_pos
+		if built_house.rotation == "0" or built_house.rotation == "180"
 		then
-			fwidth = schematic_data.schematic.size.x
-			fdepth = schematic_data.schematic.size.z
+			fwidth = size.x
+			fdepth = size.z
 		else
-			fwidth = schematic_data.schematic.size.z
-			fdepth = schematic_data.schematic.size.x
+			fwidth = size.z
+			fdepth = size.x
 		end
-		fheight = schematic_data.schematic.size.y
+		fheight = size.y
 		if replace_air then-- remove trees and leaves above
 			fheight = fheight * 3
 		end
@@ -155,11 +163,9 @@ local function check_distance(building_pos, building_size, settlement_info)
 	local distance
 	for i, built_house in ipairs(settlement_info) do
 		distance = math.sqrt(
-			((building_pos.x - built_house.pos.x)*(building_pos.x - built_house.pos.x))+
-			((building_pos.z - built_house.pos.z)*(building_pos.z - built_house.pos.z)))
-		if distance < building_size or 
-		distance < built_house.schematic_info.hsize
-		then
+			((building_pos.x - built_house.center_pos.x)*(building_pos.x - built_house.center_pos.x))+
+			((building_pos.z - built_house.center_pos.z)*(building_pos.z - built_house.center_pos.z)))
+		if distance < building_size or distance < built_house.schematic_info.hsize then
 			return false
 		end
 	end
@@ -202,7 +208,7 @@ local function pick_next_building(pos_surface, count_buildings, settlement_info,
 		count_buildings[current_schematic_name] = count_buildings[current_schematic_name] or 0
 		if count_buildings[current_schematic_name] < current_schematic.max_num*number_of_buildings then
 			-- check distance to other buildings
-			local distance_to_other_buildings_ok = check_distance(pos_surface, 
+			local distance_to_other_buildings_ok = check_distance(pos_surface,
 				current_schematic.hsize,
 				settlement_info)
 			if distance_to_other_buildings_ok then
@@ -240,13 +246,13 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	
 	-- find center of chunk
 	local center = {
-		x=maxp.x-half_map_chunk_size, 
-		y=maxp.y, 
+		x=maxp.x-half_map_chunk_size,
+		y=maxp.y,
 		z=maxp.z-half_map_chunk_size
-	} 
+	}
 	-- find center_surface of chunk
-	local center_surface, surface_material = find_surface(center, data, va)
-	if not center_surface then
+	local center_surface_pos, surface_material = find_surface(center, data, va)
+	if not center_surface_pos then
 		return nil
 	end
 	
@@ -300,7 +306,8 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	-- add to settlement info table
 	local number_built = 1
 	settlement_info[number_built] = {
-		pos = center_surface, 
+		center_pos = center_surface_pos,
+		build_pos = get_corner_pos(center_surface_pos, townhall.schematic, rotation),
 		schematic_info = townhall,
 		rotation = rotation,
 		surface_mat = surface_material,
@@ -308,17 +315,17 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	-- debugging variable
 	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
-	local x, z, r = center_surface.x, center_surface.z, townhall.hsize
+	local x, z, r = center_surface_pos.x, center_surface_pos.z, townhall.hsize
 	-- draw circles around center and increase radius by math.random(2,5)
 	for circle = 1,20 do
-		if number_built < number_of_buildings	then 
+		if number_built < number_of_buildings	then
 			-- set position on imaginary circle
 			for angle_step = 0, 360, 15 do
 				local angle = angle_step * math.pi / 180
 				local ptx, ptz = x + r * math.cos( angle ), z + r * math.sin( angle )
 				ptx = math.floor(ptx + 0.5) -- round
 				ptz = math.floor(ptz + 0.5)
-				local pos1 = { x=ptx, y=center_surface.y, z=ptz}
+				local pos1 = { x=ptx, y=center_surface_pos.y, z=ptz}
 
 				local pos_surface, surface_material = find_surface(pos1, data, va, settlement_def.altitude_min, settlement_def.altitude_max)
 				if pos_surface then
@@ -332,13 +339,14 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 						rotation = possible_rotations[ math.random( #possible_rotations ) ]
 						number_built = number_built + 1
 						settlement_info[number_built] = {
-							pos = pos_surface, 
+							center_pos = pos_surface,
+							build_pos = get_corner_pos(pos_surface, building_all_info.schematic, rotation),
 							schematic_info = building_all_info,
 							rotation = rotation,
 							surface_mat = surface_material,
 						}
 						building_counts[building_all_info.name] = (building_counts[building_all_info.name] or 0) + 1
-						if number_of_buildings == number_built 
+						if number_of_buildings == number_built
 						then
 							break
 						end
@@ -362,8 +370,8 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 		return nil
 	end
 	-- add settlement to list
-	table.insert(settlements.settlements_in_world, 
-		{pos=center_surface, name=name, discovered_by = {}})
+	table.insert(settlements.settlements_in_world,
+		{pos=center_surface_pos, name=name, discovered_by = {}})
 	-- save list to file
 	settlements.settlements_save()
 
@@ -385,7 +393,7 @@ local function initialize_nodes(settlement_info)
 		local depth = building_all_info.schematic.size.z
 		local height = building_all_info.schematic.size.y
 
-		local p = built_house.pos
+		local p = built_house.build_pos
 		for yi = 1,height do
 			for xi = 0,width do
 				for zi = 0,depth do
@@ -411,10 +419,10 @@ local function paths(data, va, settlement_info)
 	local end_point
 	local distance
 	--for k,v in pairs(settlement_info) do
-	starting_point = settlement_info[1].pos
+	starting_point = settlement_info[1].center_pos
 	for i,built_house in ipairs(settlement_info) do
 
-		end_point = built_house.pos
+		end_point = built_house.center_pos
 		if starting_point ~= end_point
 		then
 			-- loop until end_point is reached (distance == 0)
@@ -445,35 +453,35 @@ local function paths(data, va, settlement_info)
 				-- evaluate which pos is closer to the end_point
 				if dist_north_p_to_end <= dist_south_p_to_end and
 				dist_north_p_to_end <= dist_west_p_to_end and
-				dist_north_p_to_end <= dist_east_p_to_end 
+				dist_north_p_to_end <= dist_east_p_to_end
 				then
 					starting_point = north_p
 					distance = dist_north_p_to_end
 
 				elseif dist_south_p_to_end <= dist_north_p_to_end and
 				dist_south_p_to_end <= dist_west_p_to_end and
-				dist_south_p_to_end <= dist_east_p_to_end 
+				dist_south_p_to_end <= dist_east_p_to_end
 				then
 					starting_point = south_p
 					distance = dist_south_p_to_end
 
 				elseif dist_west_p_to_end <= dist_north_p_to_end and
 				dist_west_p_to_end <= dist_south_p_to_end and
-				dist_west_p_to_end <= dist_east_p_to_end 
+				dist_west_p_to_end <= dist_east_p_to_end
 				then
 					starting_point = west_p
 					distance = dist_west_p_to_end
 
 				elseif dist_east_p_to_end <= dist_north_p_to_end and
 				dist_east_p_to_end <= dist_south_p_to_end and
-				dist_east_p_to_end <= dist_west_p_to_end 
+				dist_east_p_to_end <= dist_west_p_to_end
 				then
 					starting_point = east_p
 					distance = dist_east_p_to_end
 				end
 				-- find surface of new starting point
 				local surface_point, surface_mat = find_surface(starting_point, data, va)
-				-- replace surface node with default:gravel 
+				-- replace surface node with default:gravel
 				if surface_point
 				then
 					local vi = va:index(surface_point.x, surface_point.y, surface_point.z)
@@ -496,7 +504,8 @@ end
 function settlements.place_building(vm, built_house, settlement_info)
 	local building_all_info = built_house.schematic_info
 
-	local pos = built_house.pos
+	local pos = built_house.build_pos
+	pos.y = pos.y + (building_all_info.height_adjust or 0)
 	local rotation = built_house.rotation
 	-- get building node material for better integration to surrounding
 	local platform_material = built_house.surface_mat
@@ -504,8 +513,15 @@ function settlements.place_building(vm, built_house, settlement_info)
 
 	local building_schematic = building_all_info.schematic
 	local replacements = {}
-	if building_all_info.replace_nodes and settlement_info.replacements then
-		replacements = shallowCopy(settlement_info.replacements)
+	if settlement_info.replacements then
+		for target, repl in pairs(settlement_info.replacements) do
+			replacements[target] = repl
+		end
+	end
+	if building_all_info.replace_nodes_optional and settlement_info.replacements_optional then
+		for target, repl in pairs(settlement_info.replacements_optional) do
+			replacements[target] = repl
+		end
 	end
 	if settlement_info.def.replace_with_surface_material then
 		replacements[settlement_info.def.replace_with_surface_material] = platform_material_name
@@ -515,10 +531,10 @@ function settlements.place_building(vm, built_house, settlement_info)
 		minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
 	end
 	minetest.place_schematic_on_vmanip(
-		vm, 
-		pos, 
-		building_schematic, 
-		rotation, 
+		vm,
+		pos,
+		building_schematic,
+		rotation,
 		replacements,
 		true)
 end
