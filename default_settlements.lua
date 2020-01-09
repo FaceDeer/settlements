@@ -89,7 +89,7 @@ local schematic_table = {
 		schematic = dofile(schem_path.."well.lua"),
 		hsize = 11,
 		max_num = 0.045,
-		height_adjust = -3, -- adjusts the y axis of where the schematic is built, to allow for "basement" stuff
+		height_adjust = -2, -- adjusts the y axis of where the schematic is built, to allow for "basement" stuff
 	},
 	{
 		name = "hut",
