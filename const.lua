@@ -255,7 +255,7 @@ local medieval_settlements = {
 	building_count_min = 5,
 	building_count_max = 25,
 	
-	altitude_min = 1,
+	altitude_min = 2,
 	altitude_max = 300,
 	
 	generate_name = function(pos)
@@ -284,8 +284,8 @@ local inuit_settlements = {
 	building_count_min = 3,
 	building_count_max = 9,
 	
---	altitude_min = 1,
---	altitude_max = 300,
+	altitude_min = 2,
+	altitude_max = 300,
 	
 	schematics = {
 		{
@@ -306,3 +306,54 @@ local inuit_settlements = {
 }
 
 settlements.register_settlement("inuit", inuit_settlements)
+
+
+local mer_settlements = {
+	surface_materials = {
+		"default:sand",
+		"default:dirt",
+	},
+--	replace_with_surface_material = "default:ice",
+
+	platform_shallow = "default:sand",
+	platform_deep = "default:stone",
+	platform_air = "default:water_source",
+	platform_clear_above = false,
+	
+	building_count_min = 3,
+	building_count_max = 12,
+	
+	altitude_min = -50,
+	altitude_max = -10,
+	
+	replacements = {
+		["default:coral_orange"] = {
+			"default:coral_orange",
+			"default:coral_brown", 
+		},
+	},
+	
+	schematics = {
+		{
+			name = "coralpalace",
+			schematic = dofile(schem_path.."coral_palace.lua"),
+			hsize = 9,
+			max_num = 0,
+		},
+		{
+			name = "coralhut",
+			schematic = dofile(schem_path.."coral_hut.lua"),
+			hsize = 9,
+			max_num = 1,
+		},
+	},
+	
+	generate_name = function(pos)
+		if minetest.get_modpath("namegen") then
+			return namegen.generate("inuit_camps")
+		end	
+		return "Mer camp"
+	end,
+}
+
+settlements.register_settlement("mer", mer_settlements)

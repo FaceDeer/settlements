@@ -29,7 +29,11 @@ end
 -- function clear space above baseplate 
 -------------------------------------------------------------------------------
 local function terraform(data, va, settlement_info)
-	local c_air = minetest.get_content_id("air")
+	local replace_air = settlement_info.def.platform_clear_above
+	if replace_air == nil then
+		replace_air = true
+	end
+	local c_air = minetest.get_content_id(settlement_info.def.platform_air or "air")
 	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or "default:dirt")
 	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or "default:stone")
 	local fheight
@@ -47,7 +51,10 @@ local function terraform(data, va, settlement_info)
 			fwidth = schematic_data.schematic.size.z
 			fdepth = schematic_data.schematic.size.x
 		end
-		fheight = schematic_data.schematic.size.y * 3 -- remove trees and leaves above
+		fheight = schematic_data.schematic.size.y
+		if replace_air then-- remove trees and leaves above
+			fheight = fheight * 3
+		end
 		--
 		-- now that every info is available -> create platform and clear space above
 		--
@@ -59,7 +66,9 @@ local function terraform(data, va, settlement_info)
 						ground(p, data, va, c_shallow, c_deep)
 					else
 						local vi = va:index(pos.x+xi, pos.y+yi, pos.z+zi)
-						data[vi] = c_air
+						if replace_air then
+							data[vi] = c_air
+						end
 					end
 				end
 			end
@@ -538,6 +547,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 		settlements.place_building(vm, built_house, settlement_info)
 	end
 	vm:calc_lighting()
+	vm:update_liquids()
 	vm:write_to_map()
 
 	-- evaluate settlement_info and initialize furnaces and chests
