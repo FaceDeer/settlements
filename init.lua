@@ -30,7 +30,7 @@ settlements.register_settlement = function(settlement_type_name, settlement_def)
 	end
 end
 
-dofile(modpath.."/const.lua")
+dofile(modpath.."/default_settlements.lua")
 
 -- Interconverting lua and mts formatted schematics
 -- Useful for modders adding existing schematics that are in mts format
