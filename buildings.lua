@@ -29,9 +29,13 @@ local function get_corner_pos(center_pos, schematic, rotation)
 	local size = vector.new(schematic.size)
 	size.y = 0
 	if rotation == "90" or rotation == "270" then
-		size.z, size.x = size.x, size.y
+		local tempz = size.z
+		size.z = size.x
+		size.x = tempz
 	end
-	return vector.subtract(pos, vector.round(vector.divide(size, 2)))
+	local corner1 = vector.subtract(pos, vector.floor(vector.divide(size, 2)))
+	local corner2 = vector.add(schematic.size, corner1)
+	return corner1, corner2
 end
 
 -- function clear space above baseplate
@@ -50,7 +54,7 @@ local function terraform(data, va, settlement_info)
 	for _, built_house in ipairs(settlement_info) do
 		local schematic_data = built_house.schematic_info
 		local size = schematic_data.schematic.size
-		local pos = built_house.build_pos
+		local pos = built_house.build_pos_min
 		if built_house.rotation == "0" or built_house.rotation == "180"
 		then
 			fwidth = size.x
@@ -156,23 +160,6 @@ local function find_surface(pos, data, va, altitude_min, altitude_max)
 	return nil
 end
 
--------------------------------------------------------------------------------
--- check distance for new building
--------------------------------------------------------------------------------
-local function check_distance(building_pos, building_size, settlement_info)
-	local distance
-	for i, built_house in ipairs(settlement_info) do
-		distance = math.sqrt(
-			((building_pos.x - built_house.center_pos.x)*(building_pos.x - built_house.center_pos.x))+
-			((building_pos.z - built_house.center_pos.z)*(building_pos.z - built_house.center_pos.z)))
-		if distance < building_size or distance < built_house.schematic_info.hsize then
-			return false
-		end
-	end
-	return true
-end
-
-
 local function shallowCopy(original)
 	local copy = {}
 	for key, value in pairs(original) do
@@ -192,11 +179,31 @@ local function shuffle(tbl)
 	return ret
 end
 
+-- If the building fits into the areastore without overlapping existing buildings,
+-- add it to the areastore and return true. Otherwise return false.
+local function insert_into_area(building, areastore)
+	local buffer = building.schematic_info.buffer or 0
+	local edge1 = vector.new(building.build_pos_min)
+	edge1 = vector.subtract(edge1, buffer)
+	edge1.y = 0
+	local edge2 = vector.new(building.build_pos_max)
+	edge2 = vector.add(edge2, buffer)
+	edge2.y = 1
+	
+	local result = areastore:get_areas_in_area(edge1, edge2, true)
+	if next(result) then
+		return false
+	end
+	areastore:insert_area(edge1, edge2, "")
+	return true
+end
+
+local possible_rotations = {"0", "90", "180", "270"}
 
 -------------------------------------------------------------------------------
 -- everything necessary to pick a fitting next building
 -------------------------------------------------------------------------------
-local function pick_next_building(pos_surface, count_buildings, settlement_info, settlement_def)
+local function pick_next_building(pos_surface, surface_material, count_buildings, settlement_info, settlement_def, areastore)
 	local number_of_buildings = settlement_info.number_of_buildings
 	local randomized_schematic_table = shuffle(settlement_def.schematics)
 	-- pick schematic
@@ -207,14 +214,19 @@ local function pick_next_building(pos_surface, count_buildings, settlement_info,
 		local current_schematic_name = current_schematic.name
 		count_buildings[current_schematic_name] = count_buildings[current_schematic_name] or 0
 		if count_buildings[current_schematic_name] < current_schematic.max_num*number_of_buildings then
-			-- check distance to other buildings
-			local distance_to_other_buildings_ok = check_distance(pos_surface,
-				current_schematic.hsize,
-				settlement_info)
-			if distance_to_other_buildings_ok then
-				-- count built houses
+			local rotation = possible_rotations[math.random(#possible_rotations)]
+			local corner1, corner2 = get_corner_pos(pos_surface, current_schematic.schematic, rotation)
+			local building_info = {
+				center_pos = pos_surface,
+				build_pos_min = corner1,
+				build_pos_max = corner2,
+				schematic_info = current_schematic,
+				rotation = rotation,
+				surface_mat = surface_material,
+			}
+			if insert_into_area(building_info, areastore) then
 				count_buildings[current_schematic.name] = count_buildings[current_schematic.name] +1
-				return current_schematic
+				return building_info
 			end
 		end
 	end
@@ -239,7 +251,6 @@ local settlement_sizes = {}
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
 local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
-	local possible_rotations = {"0", "90", "180", "270"}
 -- TODO an option here
 --	local possible_wallmaterials = wallmaterial
 --	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
@@ -272,7 +283,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	end
 	
 	 -- pick one at random
-	settlement_def = settlement_defs[math.random(1, #settlement_defs)]
+	local settlement_def = settlement_defs[math.random(1, #settlement_defs)]
 	
 	-- Get a name for the settlement.
 	local name = settlement_def.generate_name(center)
@@ -285,6 +296,9 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	settlement_info.name = name
 	local number_of_buildings = math.random(min_number, max_number)
 	settlement_info.number_of_buildings = number_of_buildings
+	local areastore = AreaStore()
+	settlement_info.areastore = areastore
+	areastore:reserve(number_of_buildings)
 	
 	local replacements = {}
 	settlement_info.replacements = replacements
@@ -305,17 +319,24 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	local rotation = possible_rotations[ math.random( #possible_rotations ) ]
 	-- add to settlement info table
 	local number_built = 1
-	settlement_info[number_built] = {
+	local corner1, corner2 = get_corner_pos(center_surface_pos, townhall.schematic, rotation)
+	local center_building = {
 		center_pos = center_surface_pos,
-		build_pos = get_corner_pos(center_surface_pos, townhall.schematic, rotation),
+		build_pos_min = corner1,
+		build_pos_max = corner2,
 		schematic_info = townhall,
 		rotation = rotation,
 		surface_mat = surface_material,
 	}
+	settlement_info[number_built] = center_building
+	
+	insert_into_area(center_building, areastore)
+		
 	-- debugging variable
 	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
-	local x, z, r = center_surface_pos.x, center_surface_pos.z, townhall.hsize
+	local x, z = center_surface_pos.x, center_surface_pos.z
+	local r = math.max(townhall.schematic.size.x, townhall.schematic.size.z) + (townhall.buffer or 0)
 	-- draw circles around center and increase radius by math.random(2,5)
 	for circle = 1,20 do
 		if number_built < number_of_buildings	then
@@ -326,28 +347,15 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 				ptx = math.floor(ptx + 0.5) -- round
 				ptz = math.floor(ptz + 0.5)
 				local pos1 = { x=ptx, y=center_surface_pos.y, z=ptz}
-
 				local pos_surface, surface_material = find_surface(pos1, data, va, settlement_def.altitude_min, settlement_def.altitude_max)
 				if pos_surface then
-					local building_all_info = pick_next_building(pos_surface, count_buildings, settlement_info, settlement_def)
-					
-					-- TODO test if building fits inside va. Doesn't seem to be a problem for mapgen, but
-					-- sometimes the debugging tool cuts buildings at the edges of town. Maybe expand the debugging
-					-- tool's voxel area a bit instead?
-					
-					if building_all_info then
-						rotation = possible_rotations[ math.random( #possible_rotations ) ]
+					local building_info = pick_next_building(pos_surface, surface_material, count_buildings, settlement_info, settlement_def, areastore)
+					if building_info then
 						number_built = number_built + 1
-						settlement_info[number_built] = {
-							center_pos = pos_surface,
-							build_pos = get_corner_pos(pos_surface, building_all_info.schematic, rotation),
-							schematic_info = building_all_info,
-							rotation = rotation,
-							surface_mat = surface_material,
-						}
-						building_counts[building_all_info.name] = (building_counts[building_all_info.name] or 0) + 1
-						if number_of_buildings == number_built
-						then
+						settlement_info[number_built] = building_info
+						local name_built = building_info.schematic_info.name
+						building_counts[name_built] = (building_counts[name_built] or 0) + 1
+						if number_of_buildings == number_built then
 							break
 						end
 					end
@@ -360,6 +368,10 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 			break
 		end
 	end
+	
+	--minetest.debug(dump(areastore:get_areas_in_area({x=-31000,y=-31000,z=-31000}, {x=31000,y=31000,z=31000})))
+
+	
 	if settlements.debug then
 		minetest.chat_send_all("built ".. number_built .. " out of " .. number_of_buildings)
 	end
@@ -387,24 +399,19 @@ end
 
 local function initialize_nodes(settlement_info)
 	for i, built_house in ipairs(settlement_info) do
-		local building_all_info = built_house.schematic_info
-
-		local width = building_all_info.schematic.size.x
-		local depth = building_all_info.schematic.size.z
-		local height = building_all_info.schematic.size.y
-
-		local p = built_house.build_pos
-		for yi = 1,height do
-			for xi = 0,width do
-				for zi = 0,depth do
-					local ptemp = {x=p.x+xi, y=p.y+yi, z=p.z+zi}
-					local node = minetest.get_node(ptemp)
+		local pmin = built_house.build_pos_min
+		local pmax = built_house.build_pos_max
+		for yi = pmin.y, pmax.y do
+			for xi = pmin.x, pmax.x do
+				for zi = pmin.z, pmax.z do
+					local pos = {x=xi, y=yi, z=zi}
+					local node = minetest.get_node(pos)
 					local node_def = minetest.registered_nodes[node.name]
 					if node_def.on_construct then
-						node_def.on_construct(ptemp)
+						node_def.on_construct(pos)
 					end
 					if built_house.schematic_info.initialize_node then
-						built_house.schematic_info.initialize_node(ptemp, node, node_def, settlement_info)
+						built_house.schematic_info.initialize_node(pos, node, node_def, settlement_info)
 					end
 				end
 			end
@@ -504,7 +511,7 @@ end
 function settlements.place_building(vm, built_house, settlement_info)
 	local building_all_info = built_house.schematic_info
 
-	local pos = built_house.build_pos
+	local pos = built_house.build_pos_min
 	pos.y = pos.y + (building_all_info.height_adjust or 0)
 	local rotation = built_house.rotation
 	-- get building node material for better integration to surrounding

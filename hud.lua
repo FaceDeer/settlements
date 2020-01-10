@@ -5,7 +5,6 @@ end
 local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 15 
 local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 300
 local test_interval = 5 -- check every test_interval seconds
-local displacement = {x=5, y=3, z=5} -- needed to put the marker in the center of town hall
 
 local player_huds = {}
 -- Each player will have a table of [position_hash] = hud_id pairs in here
@@ -71,7 +70,7 @@ minetest.register_globalstep(function(dtime)
 		local player_name = player:get_player_name()
 		for _, settlement in ipairs(settlements.settlements_in_world) do
 			local discovered_by = settlement.discovered_by
-			local settlement_pos = vector.add(settlement.pos, displacement)
+			local settlement_pos = vector.add(settlement.pos, {x=0, y=2, z=0})
 			local distance = vector.distance(player_pos, settlement_pos)
 			if distance < discovery_range and not discovered_by[player_name] then
 				discovered_by[player_name] = true
@@ -85,7 +84,7 @@ minetest.register_globalstep(function(dtime)
 				minetest.chat_send_player(player_name, discovery_note)
 				minetest.sound_play({name = "settlements_chime01", gain = 0.25}, {to_player=player_name})
 			end
-			if not found_visible and distance < visual_range and discovered_by[player_name] then
+			if distance < visual_range and discovered_by[player_name] then
 				local settlement_name = settlement.name or "Town"
 				add_hud_marker(player, player_name, settlement_pos, settlement_name)
 			end			

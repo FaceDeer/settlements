@@ -238,7 +238,6 @@ minetest.register_craftitem("settlements:tool", {
 	description = "settlements build tool",
 	inventory_image = "default_tool_woodshovel.png",
 	-- build single house
-	-- TODO: broke this when implementing registered settlement defs, fix it
 	on_use = function(itemstack, placer, pointed_thing)
 		local center_surface = pointed_thing.under
 		if center_surface then
@@ -246,7 +245,7 @@ minetest.register_craftitem("settlements:tool", {
 			local built_house = {}
 			built_house.schematic_info = selected_building
 			built_house.center_pos = center_surface -- we're not terraforming so this doesn't matter
-			built_house.build_pos = center_surface
+			built_house.build_pos_min = center_surface
 			built_house.rotation = "0"
 			built_house.surface_mat = c_dirt_with_grass
 			

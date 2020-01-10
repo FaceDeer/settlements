@@ -78,7 +78,7 @@ local schematic_table = {
 	{
 		name = "townhall",
 		schematic = dofile(schem_path.."townhall.lua"),
-		hsize = 15, -- buffer space around the building, footprint is treated as this size for spacing purposes
+		buffer = 3, -- buffer space around the building, footprint is treated as radius max(size.x, size.z) + buffer for spacing purposes
 		max_num = 0, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 		replace_nodes_optional = true, -- If true, default:cobble will be replaced with a random wall material
@@ -87,14 +87,14 @@ local schematic_table = {
 	{
 		name = "well",
 		schematic = dofile(schem_path.."well.lua"),
-		hsize = 11,
+		buffer = 2,
 		max_num = 0.045,
 		height_adjust = -2, -- adjusts the y axis of where the schematic is built, to allow for "basement" stuff
 	},
 	{
 		name = "hut",
 		schematic = dofile(schem_path.."hut.lua"),
-		hsize = 11,
+		buffer = 1,
 		max_num = 0.9,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
@@ -102,32 +102,31 @@ local schematic_table = {
 	{
 		name = "garden",
 		schematic = dofile(schem_path.."garden.lua"),
-		hsize = 11,
 		max_num = 0.1,
 		initialize_node = initialize_node,
 	},
 	{
 		name = "lamp",
 		schematic = dofile(schem_path.."lamp.lua"),
-		hsize = 10,
+		buffer = 3,
 		max_num = 0.05,
 	},
 	{
 		name = "tower",
 		schematic = dofile(schem_path.."tower.lua"),
-		hsize = 11,
+		buffer = 3,
 		max_num = 0.055,
 	},
 	{
 		name = "church",
 		schematic = dofile(schem_path.."church.lua"),
-		hsize = 15,
+		buffer = 2,
 		max_num = 0.075,
 	},
 	{
 		name = "blacksmith",
 		schematic = dofile(schem_path.."blacksmith.lua"),
-		hsize = 11,
+		buffer = 2,
 		max_num = 0.050,
 	},
 }
@@ -137,9 +136,8 @@ if minetest.get_modpath("commoditymarket") then
 	{
 		name = "kingsmarket",
 		schematic = dofile(schem_path.."kingsmarket.lua"),
-		hsize = 13, -- buffer space around the building, footprint is treated as this size for spacing purposes
-		max_num = 0.1, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
-					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
+		buffer = 2,
+		max_num = 0.1,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
 	})
@@ -147,7 +145,7 @@ if minetest.get_modpath("commoditymarket") then
 	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
-		hsize = 11,
+		buffer = 1,
 		max_num = 0.025,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
@@ -229,6 +227,10 @@ local medieval_settlements = {
 
 settlements.register_settlement("medieval", medieval_settlements)
 
+-----------------------------------------------------------------------------------------
+
+if minetest.settings:get_bool("settlements_igloos", false) then
+
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_inuit.cfg"))
 end
@@ -252,7 +254,7 @@ local inuit_settlements = {
 		{
 			name = "igloo",
 			schematic = dofile(schem_path.."igloo.lua"),
-			hsize = 9,
+			buffer = 2,
 			max_num = 1,
 			initialize_node = initialize_node,
 		},
@@ -268,6 +270,11 @@ local inuit_settlements = {
 
 settlements.register_settlement("inuit", inuit_settlements)
 
+end
+
+-------------------------------------------------------------------------------------------
+
+if minetest.settings:get_bool("settlements_underwater", false) then
 
 local mer_settlements = {
 	surface_materials = {
@@ -298,23 +305,28 @@ local mer_settlements = {
 		{
 			name = "coralpalace",
 			schematic = dofile(schem_path.."coral_palace.lua"),
-			hsize = 9,
+			buffer = 2,
 			max_num = 0,
 		},
 		{
 			name = "coralhut",
 			schematic = dofile(schem_path.."coral_hut.lua"),
-			hsize = 9,
+			buffer = 1,
 			max_num = 1,
 		},
 	},
 	
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
-			return namegen.generate("inuit_camps")
+			return namegen.generate("mer_settlements")
 		end	
 		return "Mer camp"
 	end,
 }
 
+if minetest.get_modpath("namegen") then
+	namegen.parse_lines(io.lines(modpath.."/namegen_mer.cfg"))
+end
 settlements.register_settlement("mer", mer_settlements)
+
+end
