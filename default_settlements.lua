@@ -379,16 +379,16 @@ local jungle_settlements = {
 	},
 	
 	generate_name = function(pos)
---		if minetest.get_modpath("namegen") then
---			return namegen.generate("mer_settlements")
---		end	
+		if minetest.get_modpath("namegen") then
+			return namegen.generate("jungle_camps")
+		end	
 		return "Jungle settlement"
 	end,
 }
 
---if minetest.get_modpath("namegen") then
---	namegen.parse_lines(io.lines(modpath.."/namegen_mer.cfg"))
---end
+if minetest.get_modpath("namegen") then
+	namegen.parse_lines(io.lines(modpath.."/namegen_jungle.cfg"))
+end
 settlements.register_settlement("jungle", jungle_settlements)
 
 end
