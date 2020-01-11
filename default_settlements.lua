@@ -68,13 +68,13 @@ local schem_path = modpath.."/schematics/"
 
 ----------------------------------------------------------------------------------------
 
+--settlements.convert_mts_to_lua(schem_path.."filename.mts")
+
 if minetest.settings:get_bool("settlements_medieval", true) then
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
 end
-
---settlements.convert_mts_to_lua(schem_path.."jungle_tree.mts")
 
 -- list of schematics
 local schematic_table = {
@@ -290,7 +290,6 @@ local mer_settlements = {
 	platform_shallow = "default:sand",
 	platform_deep = "default:stone",
 	platform_air = "default:water_source",
-	platform_clear_above = false,
 	
 	building_count_min = 3,
 	building_count_max = 12,
@@ -311,12 +310,14 @@ local mer_settlements = {
 			schematic = dofile(schem_path.."coral_palace.lua"),
 			buffer = 2,
 			max_num = 0,
+			platform_clear_above = false,
 		},
 		{
 			name = "coralhut",
 			schematic = dofile(schem_path.."coral_hut.lua"),
 			buffer = 1,
 			max_num = 1,
+			platform_clear_above = false,
 		},
 	},
 	
@@ -347,9 +348,9 @@ local jungle_settlements = {
 		"default:jungletree",
 	},
 
-	platform_clear_above = false,
-	platform_fill_below = false,
-	
+	platform_shallow = "default:dirt_with_rainforest_litter",
+	platform_deep = "default:stone",
+
 	building_count_min = 3,
 	building_count_max = 12,
 	
@@ -358,11 +359,22 @@ local jungle_settlements = {
 	
 	schematics = {
 		{
-			name = "jungle_tree_hut",
-			schematic = dofile(schem_path.."jungle_tree_with_hut.lua"),
+			name = "jungle_tree_hut_complex",
+			schematic = dofile(schem_path.."jungle_tree_hut_complex.lua"),
 			buffer = 1,
+			max_num = 0,
+			force_place = false,
+			platform_clear_above = false,
+			platform_fill_below = false,
+			height_adjust = 1, -- adjusts the y axis of where the schematic is built
+		},
+		{
+			name = "jungle_tree_hut",
+			schematic = dofile(schem_path.."jungle_tree_hut.lua"),
+			buffer = 0,
 			max_num = 1,
 			force_place = false,
+			platform_clear_above = false,
 		},
 	},
 	

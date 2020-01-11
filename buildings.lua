@@ -40,18 +40,6 @@ end
 
 -- function clear space above baseplate
 local function terraform(data, va, settlement_info)
-	local replace_air = settlement_info.def.platform_clear_above
-	local build_platform = settlement_info.def.platform_build_below
-	if replace_air == nil then
-		replace_air = true
-	end
-	if build_platform == nil then
-		build_platform = true
-	end
-	if not (replace_air or build_platform) then
-		return
-	end
-	
 	local c_air = minetest.get_content_id(settlement_info.def.platform_air or "air")
 	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or "default:dirt")
 	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or "default:stone")
@@ -61,6 +49,16 @@ local function terraform(data, va, settlement_info)
 
 	for _, built_house in ipairs(settlement_info) do
 		local schematic_data = built_house.schematic_info
+		
+		local replace_air = schematic_data.platform_clear_above
+		local build_platform = schematic_data.platform_build_below
+		if replace_air == nil then
+			replace_air = true
+		end
+		if build_platform == nil then
+			build_platform = true
+		end	
+		
 		local size = schematic_data.schematic.size
 		local pos = built_house.build_pos_min
 		if built_house.rotation == "0" or built_house.rotation == "180"
