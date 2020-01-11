@@ -64,16 +64,19 @@ local initialize_node = function(pos, node, node_def, settlement_info)
 	end
 end
 
+local schem_path = modpath.."/schematics/"
+
 ----------------------------------------------------------------------------------------
+
+if minetest.settings:get_bool("settlements_medieval", true) then
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
 end
 
-local schem_path = modpath.."/schematics/"
---
+--settlements.convert_mts_to_lua(schem_path.."jungle_tree.mts")
+
 -- list of schematics
---
 local schematic_table = {
 	{
 		name = "townhall",
@@ -161,7 +164,6 @@ local medieval_settlements = {
 		"default:dirt_with_snow",
 		"default:dirt_with_dry_grass",
 		"default:dirt_with_coniferous_litter",
-		"default:dirt_with_rainforest_litter",
 		"default:sand",
 		"default:silver_sand",
 		"default:desert_sand",
@@ -226,6 +228,8 @@ local medieval_settlements = {
 }
 
 settlements.register_settlement("medieval", medieval_settlements)
+
+end
 
 -----------------------------------------------------------------------------------------
 
@@ -328,5 +332,51 @@ if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_mer.cfg"))
 end
 settlements.register_settlement("mer", mer_settlements)
+
+end
+
+----------------------------------------------------------------------------------------
+
+if minetest.settings:get_bool("settlements_jungle", false) then
+
+local jungle_settlements = {
+	surface_materials = {
+		"default:dirt_with_rainforest_litter",
+	},
+	ignore_surface_materials = {
+		"default:jungletree",
+	},
+
+	platform_clear_above = false,
+	platform_fill_below = false,
+	
+	building_count_min = 3,
+	building_count_max = 12,
+	
+	altitude_min = 2,
+	altitude_max = 300,
+	
+	schematics = {
+		{
+			name = "jungle_tree_hut",
+			schematic = dofile(schem_path.."jungle_tree_with_hut.lua"),
+			buffer = 1,
+			max_num = 1,
+			force_place = false,
+		},
+	},
+	
+	generate_name = function(pos)
+--		if minetest.get_modpath("namegen") then
+--			return namegen.generate("mer_settlements")
+--		end	
+		return "Jungle settlement"
+	end,
+}
+
+--if minetest.get_modpath("namegen") then
+--	namegen.parse_lines(io.lines(modpath.."/namegen_mer.cfg"))
+--end
+settlements.register_settlement("jungle", jungle_settlements)
 
 end

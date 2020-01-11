@@ -41,9 +41,17 @@ end
 -- function clear space above baseplate
 local function terraform(data, va, settlement_info)
 	local replace_air = settlement_info.def.platform_clear_above
+	local build_platform = settlement_info.def.platform_build_below
 	if replace_air == nil then
 		replace_air = true
 	end
+	if build_platform == nil then
+		build_platform = true
+	end
+	if not (replace_air or build_platform) then
+		return
+	end
+	
 	local c_air = minetest.get_content_id(settlement_info.def.platform_air or "air")
 	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or "default:dirt")
 	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or "default:stone")
@@ -73,14 +81,12 @@ local function terraform(data, va, settlement_info)
 		for zi = 0,fdepth-1 do
 			for yi = 0,fheight do
 				for xi = 0,fwidth-1 do
-					if yi == 0 then
+					if yi == 0 and build_platform then
 						local p = {x=pos.x+xi, y=pos.y, z=pos.z+zi}
 						ground(p, data, va, c_shallow, c_deep)
-					else
+					elseif replace_air then
 						local vi = va:index(pos.x+xi, pos.y+yi, pos.z+zi)
-						if replace_air then
-							data[vi] = c_air
-						end
+						data[vi] = c_air
 					end
 				end
 			end
@@ -537,13 +543,19 @@ function settlements.place_building(vm, built_house, settlement_info)
 	if settlements.debug then
 		minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
 	end
+	
+	local force_place = building_all_info.force_place
+	if force_place == nil then
+		force_place = true
+	end
+	
 	minetest.place_schematic_on_vmanip(
 		vm,
 		pos,
 		building_schematic,
 		rotation,
 		replacements,
-		true)
+		force_place)
 end
 
 local data = {} -- for better memory management, use externally-allocated buffer

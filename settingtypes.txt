@@ -7,5 +7,7 @@ settlements_discovery_range (Settlement discovery range) int 15
 settlements_visibility_range (Settlement visibility range) int 300
 
 [Default settlement types]
+settlements_medieval (Medieval towns) bool true
 settlements_underwater (Underwater coral settlements) bool false
 settlements_igloos (Igloo clusters) bool false
+settlements_jungle (Jungle treehouses) bool false
