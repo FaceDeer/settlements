@@ -35,16 +35,16 @@ local source_texts = {
 	modpath.."/sourcetexts/caveregionsoftheozarksandblackhills.txt",
 }
 
-local function fill_shelf(pos, author)
-	local inv = minetest.get_inventory( {type="node", pos=pos} )
-	for i = 1, math.random(2, 8) do
-		local source_text = source_texts[math.random(1, #source_texts)]
-		local title = settlements.generate_line(source_text, math.random(3, 6))
-		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
-		local book = settlements.generate_book(source_text, title, author)
-		inv:add_item("books", book)
-	end
-end
+--local function fill_shelf(pos, author)
+--	local inv = minetest.get_inventory( {type="node", pos=pos} )
+--	for i = 1, math.random(2, 8) do
+--		local source_text = source_texts[math.random(1, #source_texts)]
+--		local title = settlements.generate_line(source_text, math.random(3, 6))
+--		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
+--		local book = settlements.generate_book(source_text, title, author)
+--		inv:add_item("books", book)
+--	end
+--end
 
 local initialize_node = function(pos, node, node_def, settlement_info)
 	if settlement_info.name and node.name == "default:sign_wall_steel" then
