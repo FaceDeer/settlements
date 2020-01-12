@@ -139,7 +139,7 @@ if minetest.get_modpath("commoditymarket") then
 	{
 		name = "kingsmarket",
 		schematic = dofile(schem_path.."kingsmarket.lua"),
-		buffer = 2,
+		buffer = 1,
 		max_num = 0.1,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
