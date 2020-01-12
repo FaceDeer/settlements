@@ -15,7 +15,7 @@ local n14 = { name = "stairs:slab_desert_sandstone_brick", param2 = 22 }
 local n15 = { name = "stairs:stair_desert_sandstone_brick", param2 = 3 }
 local n16 = { name = "stairs:slab_desert_sandstone_brick", param2 = 17 }
 local n17 = { name = "stairs:slab_desert_sandstone_brick", param2 = 15 }
-local n18 = { name = "commoditymarket:night_market", param2 = 2 }
+local n18 = { name = "default:chest", param2 = 2 }
 local n19 = { name = "default:chest", param2 = 2 }
 local n20 = { name = "stairs:stair_desert_sandstone_brick", param2 = 18 }
 local n21 = { name = "doors:door_wood_a", param2 = 2 }
@@ -27,7 +27,7 @@ local n26 = { name = "stairs:stair_desert_sandstone_brick", param2 = 20 }
 local n27 = { name = "doors:door_wood_a" }
 local n28 = { name = "doors:hidden" }
 local n29 = { name = "default:ladder_wood", param2 = 3 }
-local n30 = { name = "commoditymarket:kings_market" }
+local n30 = { name = "default:chest" }
 local n31 = { name = "stairs:stair_desert_sandstone_brick", param2 = 11 }
 local n32 = { name = "doors:trapdoor", param2 = 3 }
 local n33 = { name = "default:chest", param2 = 3 }
@@ -37,6 +37,11 @@ local n36 = { name = "stairs:stair_desert_sandstone_brick", param2 = 5 }
 local n37 = { name = "stairs:stair_desert_sandstone_brick", param2 = 14 }
 local n38 = { name = "stairs:stair_desert_sandstone_brick", param2 = 2 }
 local n39 = { name = "stairs:slab_desert_sandstone_brick", param2 = 6 }
+
+if minetest.get_modpath("commoditymarket") then
+	n30 = { name = "commoditymarket:kings_market", param2 = 1 }
+	n18 = { name = "commoditymarket:night_market", param2 = 2 }
+end
 
 return {
 	yslice_prob = {

@@ -39,7 +39,7 @@ local n39 = { name = "default:torch_wall", param2 = 2 }
 local n40 = { name = "stairs:stair_junglewood", param2 = 20 }
 local n41 = { name = "stairs:stair_wood", param2 = 2 }
 local n42 = { name = "doors:door_wood_a", param2 = 3 }
-local n43 = { name = "commoditymarket:kings_market", param2 = 1 }
+local n43 = { name = "default:chest", param2 = 1 }
 local n44 = { name = "doors:hidden", param2 = 3 }
 local n45 = { name = "doors:trapdoor", param2 = 12 }
 local n46 = { name = "stairs:stair_junglewood", param2 = 1 }
@@ -47,6 +47,10 @@ local n47 = { name = "default:chest" }
 local n48 = { name = "stairs:stair_inner_wood", param2 = 2 }
 local n49 = { name = "stairs:stair_inner_wood", param2 = 3 }
 local n50 = { name = "stairs:slab_wood", param2 = 3 }
+
+if minetest.get_modpath("commoditymarket") then
+	n43 = { name = "commoditymarket:kings_market", param2 = 1 }
+end
 
 return {
 	yslice_prob = {

@@ -132,10 +132,6 @@ local schematic_table = {
 		buffer = 2,
 		max_num = 0.050,
 	},
-}
-
-if minetest.get_modpath("commoditymarket") then
-	table.insert(schematic_table,
 	{
 		name = "kingsmarket",
 		schematic = dofile(schem_path.."kingsmarket.lua"),
@@ -143,8 +139,7 @@ if minetest.get_modpath("commoditymarket") then
 		max_num = 0.1,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
-	})
-	table.insert(schematic_table,
+	},
 	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
@@ -152,8 +147,8 @@ if minetest.get_modpath("commoditymarket") then
 		max_num = 0.025,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
-	})
-end
+	},
+}
 
 local medieval_settlements = {
 	-- this settlement will be placed on nodes with this surface material type.
@@ -429,6 +424,12 @@ local desert_settlements = {
 			buffer = 1,
 			max_num = 0.15,
 		},
+		{
+			name = "desert_bazaar",
+			schematic = dofile(schem_path.."desert_bazaar.lua"),
+			buffer = 0,
+			max_num = 0.3,
+		},
 	},
 	
 	generate_name = function(pos)
@@ -439,15 +440,6 @@ local desert_settlements = {
 	end,
 }
 
-if minetest.get_modpath("commoditymarket") then
-	table.insert(desert_settlements.schematics,
-		{
-			name = "desert_bazaar",
-			schematic = dofile(schem_path.."desert_bazaar.lua"),
-			buffer = 0,
-			max_num = 0.3,
-		})
-end
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_desert.cfg"))

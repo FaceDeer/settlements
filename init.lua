@@ -72,8 +72,9 @@ local function settlements_load()
 		if type(settlements) == "table" then
 			local areastore = AreaStore()
 			for _, pos in ipairs(settlements) do
+				pos = vector.add(pos, {x=5, y=0, z=5}) -- Shift it over to put it in the center of town hall
 				local name = "Town"
-				if settlement.name == nil and minetest.get_modpath("namegen") then
+				if minetest.get_modpath("namegen") then
 					name = namegen.generate("settlement_towns")
 				end
 				local discovered_by = {}
