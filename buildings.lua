@@ -8,7 +8,6 @@ local surface_mats = settlements.surface_materials
 
 -- function to fill empty space below baseplate when building on a hill
 local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
-	--
 	local p2 = vector.new(pos)
 	local cnt = 0
 	local mat = c_shallow
@@ -237,17 +236,6 @@ local function pick_next_building(pos_surface, surface_material, count_buildings
 	return nil
 end
 
--------------------------------------------------------------------------------
--- save list of generated settlements
--------------------------------------------------------------------------------
-function settlements.settlements_save()
-	local file = io.open(minetest.get_worldpath().."/settlements.txt", "w")
-	if file then
-		file:write(minetest.serialize(settlements.settlements_in_world))
-		file:close()
-	end
-end
-
 local building_counts = {}
 local settlement_sizes = {}
 
@@ -373,9 +361,6 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 		end
 	end
 	
-	--minetest.debug(dump(areastore:get_areas_in_area({x=-31000,y=-31000,z=-31000}, {x=31000,y=31000,z=31000})))
-
-	
 	if settlements.debug then
 		minetest.chat_send_all("built ".. number_built .. " out of " .. number_of_buildings)
 	end
@@ -386,8 +371,8 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 		return nil
 	end
 	-- add settlement to list
-	table.insert(settlements.settlements_in_world,
-		{pos=center_surface_pos, name=name, discovered_by = {}})
+	settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
+		minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_def.name}))
 	-- save list to file
 	settlements.settlements_save()
 

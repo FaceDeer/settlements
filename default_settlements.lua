@@ -56,9 +56,9 @@ local initialize_node = function(pos, node, node_def, settlement_info)
 	if node.name == "default:chest" then
 		fill_chest(pos)
 	end
-	if node.name == "default:bookshelf" then
-		fill_shelf(pos, "a resident of " .. settlement_info.name)
-	end
+--	if node.name == "default:bookshelf" then
+--		fill_shelf(pos, "a resident of " .. settlement_info.name)
+--	end
 	if minetest.get_item_group(node.name, "plant") > 0 then
 		minetest.get_node_timer(pos):start(1000) -- start crops growing
 	end
@@ -160,13 +160,12 @@ local medieval_settlements = {
 	surface_materials = {
 		"default:dirt",
 		"default:dirt_with_grass",
-		"default:dry_dirt_with_grass",
+		"default:dry_dirt_with_dry_grass",
 		"default:dirt_with_snow",
 		"default:dirt_with_dry_grass",
 		"default:dirt_with_coniferous_litter",
 		"default:sand",
 		"default:silver_sand",
-		"default:desert_sand",
 		"default:snow_block"
 	},
 	
@@ -390,5 +389,70 @@ if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_jungle.cfg"))
 end
 settlements.register_settlement("jungle", jungle_settlements)
+
+end
+
+----------------------------------------------------------------------------------
+
+if minetest.settings:get_bool("settlements_desert", false) then
+
+local desert_settlements = {
+	surface_materials = {
+		"default:desert_sand",
+	},
+	ignore_surface_materials = {
+		"default:cactus",
+	},
+
+	platform_shallow = "default:desert_sand",
+	platform_deep = "default:stone",
+	path_material = "default:desert_sandstone",
+	
+	replace_with_surface_material = "default:dirt_with_grass",
+
+	building_count_min = 3,
+	building_count_max = 20,
+	
+	altitude_min = 2,
+	altitude_max = 300,
+	
+	schematics = {
+		{
+			name = "desert_hut",
+			schematic = dofile(schem_path.."desert_hut.lua"),
+			buffer = 1,
+			max_num = 0.7,
+		},
+		{
+			name = "desert_watchtower",
+			schematic = dofile(schem_path.."desert_watchtower.lua"),
+			buffer = 1,
+			max_num = 0.15,
+		},
+	},
+	
+	generate_name = function(pos)
+		if minetest.get_modpath("namegen") then
+			return namegen.generate("desert_settlement")
+		end	
+		return "Desert settlement"
+	end,
+}
+
+if minetest.get_modpath("commoditymarket") then
+	table.insert(desert_settlements.schematics,
+		{
+			name = "desert_bazaar",
+			schematic = dofile(schem_path.."desert_bazaar.lua"),
+			buffer = 0,
+			max_num = 0.3,
+		})
+end
+
+if minetest.get_modpath("namegen") then
+	namegen.parse_lines(io.lines(modpath.."/namegen_desert.cfg"))
+end
+
+settlements.register_settlement("desert", desert_settlements)
 
 end

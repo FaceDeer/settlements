@@ -21,6 +21,7 @@ dofile(modpath.."/bookgen.lua")
 
 settlements.register_settlement = function(settlement_type_name, settlement_def)
 	assert(not settlements.settlement_defs[settlement_type_name])
+	settlement_def.name = settlement_type_name
 	settlements.settlement_defs[settlement_type_name] = settlement_def
 	for _, material in ipairs(settlement_def.surface_materials) do
 		local c_mat = minetest.get_content_id(material)
@@ -57,34 +58,47 @@ end
 dofile(modpath.."/default_settlements.lua")
 
 ----------------------------------------------------------------------------
+local worldpath = minetest.get_worldpath()
+local areastore_filename = worldpath.."/settlements_areastore.txt"
 
 -- load list of generated settlements
 local function settlements_load()
-	local file = io.open(minetest.get_worldpath().."/settlements.txt", "r")
-	if file then
-		local settlements = minetest.deserialize(file:read("*all"))
+	local area_file = io.open(areastore_filename, "r")
+	
+	-- Compatibility with old versions
+	local old_file = io.open(worldpath.."/settlements.txt", "r")
+	if old_file and not area_file then
+		local settlements = minetest.deserialize(old_file:read("*all"))
 		if type(settlements) == "table" then
-			for _, settlement in ipairs(settlements) do
-				-- compatibility with older versions
-				if settlement.x ~= nil then
-					settlement.pos = vector.new(settlement)
-					settlement.x = nil
-					settlement.y = nil
-					settlement.z = nil
-				end
+			local areastore = AreaStore()
+			for _, pos in ipairs(settlements) do
+				local name = "Town"
 				if settlement.name == nil and minetest.get_modpath("namegen") then
-					settlement.name = namegen.generate("settlement_towns")
+					name = namegen.generate("settlement_towns")
 				end
-				if settlement.discovered_by == nil then
-					settlement.discovered_by = {}
-				end
+				local discovered_by = {}
+				local settlement_type = "medieval"
+				areastore:insert_area(pos, pos, minetest.serialize({name=name, discovered_by=discovered_by,settlement_type=settlement_type}))
 			end
-			return settlements
+			return areastore
 		end
 	end
-	return {}
+	------------------------------------
+	local areastore = AreaStore()
+	if not area_file then
+		return areastore
+	end
+	areastore:from_file(areastore_filename)
+	return areastore
 end
 settlements.settlements_in_world = settlements_load()
+
+-- save list of generated settlements
+function settlements.settlements_save()
+	settlements.settlements_in_world:to_file(areastore_filename)
+end
+
+-------------------------------------------------------------------------------
 
 -- register block for npc spawn
 local function deep_copy(table_in)
@@ -126,9 +140,15 @@ end
 -- check distance to other settlements
 -------------------------------------------------------------------------------
 local function check_distance_other_settlements(center_new_chunk)
---	local min_dist_settlements = 300
-	for i, settlement in ipairs(settlements.settlements_in_world) do
-		local distance = vector.distance(center_new_chunk, settlement.pos)
+	local min_edge = vector.subtract(center_new_chunk, settlements.min_dist_settlements)
+	local max_edge = vector.add(center_new_chunk, settlements.min_dist_settlements)
+	
+	-- This gets all neighbors within a cube-shaped volume
+	local neighbors = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true)
+
+	-- Search through those to find any that are within a spherical volume
+	for i, settlement in pairs(neighbors) do
+		local distance = vector.distance(center_new_chunk, settlement.min)
 --		minetest.chat_send_all("dist ".. distance)
 		if distance < settlements.min_dist_settlements then
 			return false

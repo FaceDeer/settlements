@@ -11,3 +11,4 @@ settlements_medieval (Medieval towns) bool true
 settlements_underwater (Underwater coral settlements) bool false
 settlements_igloos (Igloo clusters) bool false
 settlements_jungle (Jungle treehouses) bool false
+settlements_desert (Desert settlements) bool false
