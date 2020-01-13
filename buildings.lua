@@ -243,10 +243,6 @@ local settlement_sizes = {}
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
 local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
--- TODO an option here
---	local possible_wallmaterials = wallmaterial
---	local possible_wallmaterials = {wallmaterial[math.random(1,#wallmaterial)]}
-	
 	-- find center of chunk
 	local center = {
 		x=maxp.x-half_map_chunk_size,
@@ -288,7 +284,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	settlement_info.name = name
 	local number_of_buildings = math.random(min_number, max_number)
 	settlement_info.number_of_buildings = number_of_buildings
-	local areastore = AreaStore()
+	local areastore = AreaStore() -- An efficient structure for storing building footprints and testing for overlaps
 	settlement_info.areastore = areastore
 	areastore:reserve(number_of_buildings)
 	
@@ -306,9 +302,11 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	-- debugging variable
 	local count_buildings = {}
 	
-	-- first building is townhall in the center
-	local townhall = settlement_def.schematics[1]
-	local rotation = possible_rotations[ math.random( #possible_rotations ) ]
+	-- first building is selected from the central_schematics list, or randomly from schematics if that isn't defined.
+	local central_list = settlement_def.central_schematics or settlement_def.schematics
+	
+	local townhall = central_list[math.random(#central_list)]
+	local rotation = possible_rotations[math.random(#possible_rotations)]
 	-- add to settlement info table
 	local number_built = 1
 	local corner1, corner2 = get_corner_pos(center_surface_pos, townhall.schematic, rotation)
@@ -360,13 +358,14 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 			break
 		end
 	end
-	
-	-- debugging variable
-	settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
-	
+
 	if number_built == 1 then
 		return nil
 	end
+
+	-- debugging variable
+	settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
+
 	-- add settlement to list
 	settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
 		minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_def.name}))
@@ -392,9 +391,11 @@ local function initialize_nodes(settlement_info)
 					local node = minetest.get_node(pos)
 					local node_def = minetest.registered_nodes[node.name]
 					if node_def.on_construct then
+						-- if the node has an on_construct defined, call it.
 						node_def.on_construct(pos)
 					end
 					if built_house.schematic_info.initialize_node then
+						-- Hook for specialized initialization.
 						built_house.schematic_info.initialize_node(pos, node, node_def, settlement_info)
 					end
 				end
@@ -409,7 +410,6 @@ local function paths(data, va, settlement_info)
 	local starting_point
 	local end_point
 	local distance
-	--for k,v in pairs(settlement_info) do
 	starting_point = settlement_info[1].center_pos
 	for i,built_house in ipairs(settlement_info) do
 
@@ -563,7 +563,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp)
 	initialize_nodes(settlement_info)
 end
 
--- on map generation, try to build a settlement
+-- try to build a settlement outside of map generation
 settlements.generate_settlement = function(minp, maxp)
 	local vm = minetest.get_voxel_manip()
 	local emin, emax = vm:read_from_map(minp, maxp)

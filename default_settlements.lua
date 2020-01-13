@@ -71,17 +71,26 @@ if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_towns.cfg"))
 end
 
+local townhall_schematic = {
+	name = "townhall",
+	schematic = dofile(schem_path.."townhall.lua"),
+	buffer = 2, -- buffer space around the building, footprint is treated as radius max(size.x, size.z) + buffer for spacing purposes
+	max_num = 0.1, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
+					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
+	replace_nodes_optional = true, -- If true, default:cobble will be replaced with a random wall material
+	initialize_node = initialize_node, -- allows additional post-creation actions to be executed on schematic nodes once they're constructed
+}
+local kingsmarket_schematic = {
+	name = "kingsmarket",
+	schematic = dofile(schem_path.."kingsmarket.lua"),
+	buffer = 1,
+	max_num = 0.1,
+	replace_nodes_optional = true,
+	initialize_node = initialize_node,
+}
+
 -- list of schematics
 local schematic_table = {
-	{
-		name = "townhall",
-		schematic = dofile(schem_path.."townhall.lua"),
-		buffer = 3, -- buffer space around the building, footprint is treated as radius max(size.x, size.z) + buffer for spacing purposes
-		max_num = 0, -- This times the number of buildings in a settlement gives the maximum number of these buildings in a settlement.
-					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
-		replace_nodes_optional = true, -- If true, default:cobble will be replaced with a random wall material
-		initialize_node = initialize_node, -- allows additional post-creation actions to be executed on schematic nodes once they're constructed
-	},
 	{
 		name = "well",
 		schematic = dofile(schem_path.."well.lua"),
@@ -128,14 +137,6 @@ local schematic_table = {
 		max_num = 0.050,
 	},
 	{
-		name = "kingsmarket",
-		schematic = dofile(schem_path.."kingsmarket.lua"),
-		buffer = 1,
-		max_num = 0.1,
-		replace_nodes_optional = true,
-		initialize_node = initialize_node,
-	},
-	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),
 		buffer = 1,
@@ -156,7 +157,7 @@ local medieval_settlements = {
 		"default:dirt_with_coniferous_litter",
 		"default:sand",
 		"default:silver_sand",
-		"default:snow_block"
+		"default:snow_block",
 	},
 	
 	-- TODO: add a biome list. The tricky part here is, what if a biome list but not a surface materials list is provided?
@@ -194,6 +195,14 @@ local medieval_settlements = {
 		"default:pine_tree",
 		"default:acacia_tree",
 		"default:aspen_tree",
+		"default:bush_stem",
+		"default:bush_leaves",
+		"default:acacia_bush_stem",
+		"default:acacia_bush_leaves",
+		"default:pine_bush_stem",
+		"default:pine_bush_needles",
+		"default:blueberry_bush_leaves_with_berries",
+		"default:blueberry_bush_leaves",
 	},
 	
 	platform_shallow = "default:dirt",
@@ -201,6 +210,12 @@ local medieval_settlements = {
 	path_material = "default:gravel",
 	
 	schematics = schematic_table,
+	
+	-- Select one of these to form the center of town. If not defined, one will be picked from the regular schematic table
+	central_schematics = {
+		townhall_schematic,
+		kingsmarket_schematic,
+	},
 	
 	building_count_min = 5,
 	building_count_max = 25,
@@ -269,6 +284,15 @@ end
 
 if minetest.settings:get_bool("settlements_underwater", false) then
 
+local coralpalace = {
+	name = "coralpalace",
+	schematic = dofile(schem_path.."coral_palace.lua"),
+	buffer = 2,
+	max_num = 0.1,
+	platform_clear_above = false,
+}
+
+
 local mer_settlements = {
 	surface_materials = {
 		"default:sand",
@@ -293,14 +317,12 @@ local mer_settlements = {
 		},
 	},
 	
+	central_schematics = {
+		coralpalace,
+	},
+	
 	schematics = {
-		{
-			name = "coralpalace",
-			schematic = dofile(schem_path.."coral_palace.lua"),
-			buffer = 2,
-			max_num = 0,
-			platform_clear_above = false,
-		},
+		coralpalace,
 		{
 			name = "coralhut",
 			schematic = dofile(schem_path.."coral_hut.lua"),
@@ -329,6 +351,17 @@ end
 
 if minetest.settings:get_bool("settlements_jungle", false) then
 
+local jungle_hut_complex = {
+	name = "jungle_tree_hut_complex",
+	schematic = dofile(schem_path.."jungle_tree_hut_complex.lua"),
+	buffer = 1,
+	max_num = 0.1,
+	force_place = false,
+	platform_clear_above = false,
+	platform_fill_below = false,
+	height_adjust = 1, -- adjusts the y axis of where the schematic is built
+}
+
 local jungle_settlements = {
 	surface_materials = {
 		"default:dirt_with_rainforest_litter",
@@ -346,17 +379,12 @@ local jungle_settlements = {
 	altitude_min = 2,
 	altitude_max = 300,
 	
+	central_schematics = {
+		jungle_hut_complex,
+	},
+	
 	schematics = {
-		{
-			name = "jungle_tree_hut_complex",
-			schematic = dofile(schem_path.."jungle_tree_hut_complex.lua"),
-			buffer = 1,
-			max_num = 0,
-			force_place = false,
-			platform_clear_above = false,
-			platform_fill_below = false,
-			height_adjust = 1, -- adjusts the y axis of where the schematic is built
-		},
+		jungle_hut_complex,
 		{
 			name = "jungle_tree_hut",
 			schematic = dofile(schem_path.."jungle_tree_hut.lua"),
@@ -386,6 +414,19 @@ end
 
 if minetest.settings:get_bool("settlements_desert", false) then
 
+local bazaar = {
+	name = "desert_bazaar",
+	schematic = dofile(schem_path.."desert_bazaar.lua"),
+	buffer = 1,
+	max_num = 0.1,
+}
+local desert_hut = {
+	name = "desert_hut",
+	schematic = dofile(schem_path.."desert_hut.lua"),
+	buffer = 1,
+	max_num = 0.9,
+}
+
 local desert_settlements = {
 	surface_materials = {
 		"default:desert_sand",
@@ -406,24 +447,19 @@ local desert_settlements = {
 	altitude_min = 2,
 	altitude_max = 300,
 	
+	central_schematics = {
+		bazaar,
+		desert_hut,
+	},
+	
 	schematics = {
-		{
-			name = "desert_hut",
-			schematic = dofile(schem_path.."desert_hut.lua"),
-			buffer = 1,
-			max_num = 0.7,
-		},
+		desert_hut,
+		bazaar,
 		{
 			name = "desert_watchtower",
 			schematic = dofile(schem_path.."desert_watchtower.lua"),
 			buffer = 1,
 			max_num = 0.15,
-		},
-		{
-			name = "desert_bazaar",
-			schematic = dofile(schem_path.."desert_bazaar.lua"),
-			buffer = 0,
-			max_num = 0.3,
 		},
 	},
 	
