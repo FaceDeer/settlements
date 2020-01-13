@@ -115,7 +115,7 @@ end)
 -- Name-related chat commands
 
 minetest.register_chatcommand("settlements_list", {
-	decription = "List the settlements you know about",
+	description = "List the settlements you know about",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		local player_pos = player:get_pos()
@@ -150,7 +150,7 @@ local function set_all_discovered(player_name, state)
 end
 
 minetest.register_chatcommand("settlements_discover_all", {
-	decription = "Set all settlements as known",
+	description = "Set all settlements as known",
 	param = "player_name, or nothing for yourself",
 	privs = {["server"]=true},
 	func = function(name, param)
@@ -162,7 +162,7 @@ minetest.register_chatcommand("settlements_discover_all", {
 })
 
 minetest.register_chatcommand("settlements_undiscover_all", {
-	decription = "Set all settlements as unknown to you or another player",
+	description = "Set all settlements as unknown to you or another player",
 	param = "player_name, or nothing for yourself",
 	privs = {["server"]=true},
 	func = function(name, param)
@@ -174,7 +174,7 @@ minetest.register_chatcommand("settlements_undiscover_all", {
 })
 
 minetest.register_chatcommand("settlements_rename_nearest", {
-	decription = "Change the name of the nearest settlement within visible range",
+	description = "Change the name of the nearest settlement within visible range",
 	param = "The new name for this settlement, or nothing to generate a new random name",
 	privs = {["server"]=true},
 	func = function(name, param)
@@ -224,7 +224,7 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 })
 
 minetest.register_chatcommand("settlements_regenerate_names_for_type", {
-	decription = "Regenerate the names for all settments of a particular type",
+	description = "Regenerate the names for all settments of a particular type",
 	param = "The settlement type",
 	privs = {["server"]=true},
 	func = function(name, param)
