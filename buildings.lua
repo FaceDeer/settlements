@@ -236,6 +236,19 @@ local function pick_next_building(pos_surface, surface_material, count_buildings
 	return nil
 end
 
+local function select_replacements(source)
+	local destination = {}
+	if source then
+		for original, replacement in pairs(source) do
+			if type(replacement) == "table" then
+				replacement = replacement[math.random(1, #replacement)]
+			end
+			destination[original] = replacement
+		end
+	end
+	return destination
+end
+
 local building_counts = {}
 local settlement_sizes = {}
 
@@ -288,16 +301,8 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	settlement_info.areastore = areastore
 	areastore:reserve(number_of_buildings)
 	
-	local replacements = {}
-	settlement_info.replacements = replacements
-	if settlement_def.replacements then
-		for original, replacement in pairs(settlement_def.replacements) do
-			if type(replacement) == "table" then
-				replacement = replacement[math.random(1, #replacement)]
-			end
-			replacements[original] = replacement
-		end
-	end
+	settlement_info.replacements = select_replacements(settlement_def.replacements)
+	settlement_info.replacements_optional = select_replacements(settlement_def.replacements_optional)
 
 	-- debugging variable
 	local count_buildings = {}
