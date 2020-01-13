@@ -2,8 +2,11 @@ if not minetest.settings:get_bool("settlements_show_in_hud", true) then
 	return
 end
 
-local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 15 
-local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 300
+local requires_mappingkit = minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
+		and minetest.registered_items["map:mapping_kit"]
+
+local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 30
+local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 600
 local test_interval = 5 -- check every test_interval seconds
 
 local player_huds = {}
@@ -30,11 +33,12 @@ local remove_distant_hud_markers = function()
 	for player_name, waypoints in pairs(player_huds) do
 		local player = minetest.get_player_by_name(player_name)
 		if player then
+			local has_map = (not requires_mappingkit) or (player:get_inventory():contains_item("main", "map:mapping_kit"))
 			local player_pos = player:get_pos()
 			local waypoints_to_remove = {}
 			for pos_hash, hud_id in pairs(waypoints) do
 				local pos = minetest.get_position_from_hash(pos_hash)
-				if vector.distance(pos, player_pos) > visual_range then
+				if (not has_map) or vector.distance(pos, player_pos) > visual_range then
 					table.insert(waypoints_to_remove, pos_hash)
 					player:hud_remove(hud_id)
 				end
@@ -88,17 +92,20 @@ minetest.register_globalstep(function(dtime)
 				new_discovery = true
 				
 				-- Notify player of their find
-				local discovery_note = "You've discovered " .. (data.name or "a settlement") .. "!"
+				local note_name = data.name or "a settlement"
+				local discovery_note = "You've discovered " .. note_name .. "!"
 				local formspec = "size[4,1]" ..
 					"label[1.0,0.0;" .. minetest.formspec_escape(discovery_note) ..
 					"]button_exit[0.5,0.75;3,0.5;btn_ok;".. "OK" .."]"				
 				minetest.show_formspec(player_name, "settlements:discovery_popup",
 					formspec)
 				minetest.chat_send_player(player_name, discovery_note)
+				minetest.log("action", "[settlements] " .. player_name .. " discovered " .. note_name)
 				minetest.sound_play({name = "settlements_chime01", gain = 0.25}, {to_player=player_name})
 			end
 
-			if distance < visual_range and discovered_by[player_name] then
+			local has_map = (not requires_mappingkit) or (player:get_inventory():contains_item("main", "map:mapping_kit"))
+			if has_map and distance < visual_range and discovered_by[player_name] then
 				local settlement_name = data.name or "Town"
 				add_hud_marker(player, player_name, settlement_pos, settlement_name)
 			end			
@@ -208,12 +215,14 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 					return
 				end
 				param = def.generate_name(min_pos)
-			end		
+			end
+			local oldname = min_data.name
 			min_data.name = param
 			settlements.settlements_in_world:remove_area(min_id)
 			settlements.settlements_in_world:insert_area(min_pos, min_pos, minetest.serialize(min_data), min_id)
 			settlements.settlements_save()
-			minetest.chat_send_player(name, "Settlement successfully renamed to " .. param .. "."
+			minetest.log("action", "[settlements] Renamed " .. oldname .. " to " .. param)
+			minetest.chat_send_player(name, "Settlement successfully renamed from " .. oldname .. " to " .. param .. "."
 				.." Existing HUD waypoints for nearby players won't update until they go out of range and the"
 				.." waypoint is recreated again.")
 			return
@@ -244,7 +253,11 @@ minetest.register_chatcommand("settlements_regenerate_names_for_type", {
 			local data = minetest.deserialize(settlement.data)
 			if data.settlement_type == param then
 				local pos = settlement.min
+				local oldname = data.name
 				data.name = settlement_def.generate_name(pos)
+				local announcement = "Renamed " .. oldname .. " to " .. data.name
+				minetest.chat_send_player(name, announcement)
+				minetest.log("action", "[settlements] " .. announcement)
 				settlements.settlements_in_world:remove_area(id)
 				settlements.settlements_in_world:insert_area(pos, pos, minetest.serialize(data), id)
 			end
