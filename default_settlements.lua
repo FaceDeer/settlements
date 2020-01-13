@@ -237,7 +237,7 @@ end
 
 -----------------------------------------------------------------------------------------
 
-if minetest.settings:get_bool("settlements_igloos", false) then
+if minetest.settings:get_bool("settlements_igloos", true) then
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_inuit.cfg"))
@@ -349,7 +349,7 @@ end
 
 ----------------------------------------------------------------------------------------
 
-if minetest.settings:get_bool("settlements_jungle", false) then
+if minetest.settings:get_bool("settlements_jungle", true) then
 
 local jungle_hut_complex = {
 	name = "jungle_tree_hut_complex",
@@ -412,7 +412,7 @@ end
 
 ----------------------------------------------------------------------------------
 
-if minetest.settings:get_bool("settlements_desert", false) then
+if minetest.settings:get_bool("settlements_desert", true) then
 
 local bazaar = {
 	name = "desert_bazaar",
