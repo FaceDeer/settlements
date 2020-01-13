@@ -39,7 +39,7 @@ local n38 = { name = "stairs:stair_desert_sandstone_brick", param2 = 2 }
 local n39 = { name = "stairs:slab_desert_sandstone_brick", param2 = 6 }
 
 if minetest.get_modpath("commoditymarket") then
-	n30 = { name = "commoditymarket:kings_market", param2 = 1 }
+	n30 = { name = "commoditymarket:kings_market", param2 = 0 }
 	n18 = { name = "commoditymarket:night_market", param2 = 2 }
 end
 

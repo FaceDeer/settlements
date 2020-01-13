@@ -245,6 +245,59 @@ local medieval_settlements = {
 
 settlements.register_settlement("medieval", medieval_settlements)
 
+local half_map_chunk_size = settlements.half_map_chunk_size
+minetest.register_abm({
+    label = "Settlement book authoring",
+    nodenames = {"default:bookshelf"},
+    interval = 86400, -- daily
+    -- Operation interval in seconds
+    chance = 2,
+    -- Chance of triggering `action` per-node per-interval is 1.0 / this value
+    catch_up = true,
+    -- If true, catch-up behaviour is enabled: The `chance` value is
+    -- temporarily reduced when returning to an area to simulate time lost
+    -- by the area being unattended. Note that the `chance` value can often
+    -- be reduced to 1.
+
+    action = function(pos, node, active_object_count, active_object_count_wider)
+		local inv = minetest.get_inventory( {type="node", pos=pos} )
+		if not inv or not inv:room_for_item("books", "default:book_written") then
+			return
+		end
+		
+		local min_edge = vector.subtract(pos, half_map_chunk_size)
+		local max_edge = vector.add(pos, half_map_chunk_size)
+		local settlement_list = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true, true)
+		local closest_settlement
+		for id, settlement in pairs(settlement_list) do
+			local target_pos = settlement.min
+			if not closest_settlement or vector.distance(pos, target_pos) < vector.distance(pos, closest_settlement.pos) then
+				closest_settlement = {pos = target_pos, data = settlement.data}
+			end
+		end
+		
+		if not closest_settlement then
+			return
+		end
+		local data = minetest.deserialize(closest_settlement.data)
+		local town_name = data.name
+		
+		-- TODO: more book types
+		local callbacks = {}
+		table.insert(callbacks, {func = settlements.generate_travel_guide, param1=closest_settlement.pos, param2=town_name})
+		if settlements.generate_ledger then
+			table.insert(callbacks, {func = settlements.generate_ledger, param1="kings", param2=town_name})
+		end
+		
+		local callback = callbacks[math.random(#callbacks)]
+		local book = callback.func(callback.param1, callback.param2)
+		if book then
+			inv:add_item("books", book)
+		end
+	end,
+})
+
+
 end
 
 -----------------------------------------------------------------------------------------

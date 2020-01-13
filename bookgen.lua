@@ -80,7 +80,7 @@ local get_log_strings = function(market, quantity)
 	local start_point = math.random(start_range)
 	local end_point = math.min(start_point+quantity, #all_logs)
 	local out = {}
-	local last_timestamp = all_logs[start_point].timestamp
+	local last_timestamp = all_logs[end_point].timestamp
 	for i = start_point, end_point do
 		table.insert(out, log_to_string(all_logs[i], market))
 	end
@@ -99,7 +99,7 @@ settlements.generate_ledger = function(market_name, town_name)
 	strings = table.concat(strings, "\n")
 	local day = math.ceil(last_timestamp/86400)
 	local title = S("@1 Ledger on Day @2", market.def.description, day)
-	local author = S("@1's Clerk", town_name)
+	local author = S("@1's market clerk", town_name)
 	return generate_book(title, author, strings)
 end
 end
@@ -108,8 +108,9 @@ end
 -- Travel guides
 
 -- returns {pos, data}
+local half_map_chunk_size = settlements.half_map_chunk_size
 local get_random_settlement_within_range = function(pos, range_max, range_min)
-	range_min = range_min or 40 -- If no minimum provided, at least don't look within your own chunk
+	range_min = range_min or half_map_chunk_size -- If no minimum provided, at least don't look within your own chunk
 	if range_max <= range_min then
 		return
 	end
@@ -134,24 +135,45 @@ local get_random_settlement_within_range = function(pos, range_max, range_min)
 end
 
 local compass_dirs = {
-    [0] = S("east"),
-	S("northeast"),
-    S("north"),
-	S("northwest"),
-    S("west"),
+	[0] = S("west"), 
+	S("west-southwest"),
 	S("southwest"),
+	S("south-southwest"),
     S("south"),
+	S("south-southeast"),
 	S("southeast"),
+	S("east-southeast"),
+	S("east"),
+	S("east-northeast"),
+	S("northeast"),
+	S("north-northeast"),
+    S("north"),
+	S("north-northwest"),
+	S("northwest"),
+	S("west-northwest"),
+	S("west"), 
 }
-
+local increment = 2*math.pi/#compass_dirs -- Divide the circle up into pieces
+local reframe = math.pi - increment/2 -- Adjust the angle to run through a range divisible into indexes
 local compass_direction = function(p1, p2)
 	local dir = vector.subtract(p2, p1)
-	--minetest.chat_send_all("dir " .. minetest.pos_to_string(dir))
 	local angle = math.atan2(dir.z, dir.x);
-	--minetest.chat_send_all("angle " .. angle)
-	local octant = math.floor((8*angle/(2*math.pi)+8)%8 + 0.5)
-	--minetest.chat_send_all("octant " .. octant)
-	return compass_dirs[octant]
+	angle = angle + reframe
+	angle = math.ceil(angle / increment)
+	return compass_dirs[angle]	
+end
+
+local get_altitude = function(pos)
+	if pos.y > 100 then
+		return S("highlands")
+	elseif pos.y > 20 then
+		return S("midlands")
+	elseif pos.y > 0 then
+		return S("lowlands")
+	else
+		-- TODO: need to update this system once there are underground settlements
+		return S("waters")
+	end
 end
 
 settlements.generate_travel_guide = function(source_pos, source_name)
@@ -163,12 +185,13 @@ settlements.generate_travel_guide = function(source_pos, source_name)
 	local target_name = target.data.name
 
 	local title = S("A travel guide to @1", target_name)
-	local author = S("A resident of @1", source_name)
+	local author = S("a resident of @1", source_name)
 
 	local dir = compass_direction(source_pos, target.pos)
 	local distance = vector.distance(source_pos, target.pos)
 	local kilometers = string.format("%.1f", distance/1000)
+	local altitude = get_altitude(target.pos)
 	
-	local text = S("@1 kilometers to the @2 of @3 lies the settlement of @4.", kilometers, dir, source_name, target_name)
+	local text = S("In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5.", altitude, kilometers, dir, source_name, target_name)
 	return generate_book(title, author, text)
 end

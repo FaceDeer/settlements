@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-13 11:42-0700\n"
+"POT-Creation-Date: 2020-01-13 12:14-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,51 +39,67 @@ msgid "@1 Ledger on Day @2"
 msgstr ""
 
 #: bookgen.lua:102
-msgid "@1's Clerk"
-msgstr ""
-
-#: bookgen.lua:137
-msgid "east"
+msgid "@1's market clerk"
 msgstr ""
 
 #: bookgen.lua:138
-msgid "northeast"
+msgid "east"
 msgstr ""
 
 #: bookgen.lua:139
-msgid "north"
+msgid "northeast"
 msgstr ""
 
 #: bookgen.lua:140
-msgid "northwest"
+msgid "north"
 msgstr ""
 
 #: bookgen.lua:141
-msgid "west"
+msgid "northwest"
 msgstr ""
 
 #: bookgen.lua:142
-msgid "southwest"
+msgid "west"
 msgstr ""
 
 #: bookgen.lua:143
-msgid "south"
+msgid "southwest"
 msgstr ""
 
 #: bookgen.lua:144
+msgid "south"
+msgstr ""
+
+#: bookgen.lua:145
 msgid "southeast"
 msgstr ""
 
+#: bookgen.lua:161
+msgid "highlands"
+msgstr ""
+
+#: bookgen.lua:163
+msgid "midlands"
+msgstr ""
+
 #: bookgen.lua:165
+msgid "lowlands"
+msgstr ""
+
+#: bookgen.lua:167
+msgid "waters"
+msgstr ""
+
+#: bookgen.lua:179
 msgid "A travel guide to @1"
 msgstr ""
 
-#: bookgen.lua:166
-msgid "A resident of @1"
+#: bookgen.lua:180
+msgid "a resident of @1"
 msgstr ""
 
-#: bookgen.lua:172
-msgid "@1 kilometers to the @2 of @3 lies the settlement of @4."
+#: bookgen.lua:187
+msgid "In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5."
 msgstr ""
 
 #: default_settlements.lua:59
