@@ -108,7 +108,7 @@ minetest.register_globalstep(function(dtime)
 			if has_map and distance < visual_range and discovered_by[player_name] then
 				local settlement_name = data.name or "Town"
 				add_hud_marker(player, player_name, settlement_pos, settlement_name)
-			end			
+			end
 		end
 	end
 	remove_distant_hud_markers()

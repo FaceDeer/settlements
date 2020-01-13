@@ -1,5 +1,10 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
+-- internationalization boilerplate
+local S, NS = dofile(modpath.."/intllib.lua")
+
+dofile(modpath.."/bookgen.lua")
+
 ----------------------------------------------------------------------------------------------------------------
 
 local function fill_chest(pos)
@@ -30,30 +35,37 @@ local function fill_chest(pos)
 	end
 end
 
---local function fill_shelf(pos, author)
---	local inv = minetest.get_inventory( {type="node", pos=pos} )
---	for i = 1, math.random(2, 8) do
---		local source_text = source_texts[math.random(1, #source_texts)]
---		local title = settlements.generate_line(source_text, math.random(3, 6))
---		title = title:lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end) -- capitalization
---		local book = settlements.generate_book(source_text, title, author)
---		inv:add_item("books", book)
---	end
---end
+local function fill_shelf(pos, town_name)
+	-- TODO: more book types
+	local callbacks = {}
+	table.insert(callbacks, {func = settlements.generate_travel_guide, param1=pos, param2=town_name})
+	if settlements.generate_ledger then
+		table.insert(callbacks, {func = settlements.generate_ledger, param1="kings", param2=town_name})
+	end
+
+	local inv = minetest.get_inventory( {type="node", pos=pos} )
+	for i = 1, math.random(2, 8) do
+		local callback = callbacks[math.random(#callbacks)]
+		local book = callback.func(callback.param1, callback.param2)
+		if book then
+			inv:add_item("books", book)
+		end
+	end
+end
 
 local initialize_node = function(pos, node, node_def, settlement_info)
 	if settlement_info.name and node.name == "default:sign_wall_steel" then
 		local meta = minetest.get_meta(pos)
-		meta:set_string("text", settlement_info.name .. " Town Hall")
-		meta:set_string("infotext", settlement_info.name .. " Town Hall")
+		meta:set_string("text", S("@1 Town Hall", settlement_info.name))
+		meta:set_string("infotext", S("@1 Town Hall", settlement_info.name))
 	end
 	-- when chest is found -> fill with stuff
 	if node.name == "default:chest" then
 		fill_chest(pos)
 	end
---	if node.name == "default:bookshelf" then
---		fill_shelf(pos, "a resident of " .. settlement_info.name)
---	end
+	if node.name == "default:bookshelf" then
+		fill_shelf(pos, settlement_info.name)
+	end
 	if minetest.get_item_group(node.name, "plant") > 0 then
 		minetest.get_node_timer(pos):start(1000) -- start crops growing
 	end
