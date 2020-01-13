@@ -1,8 +1,5 @@
 settlements = {}
 
--- switch for debugging
-settlements.debug = false
-
 settlements.half_map_chunk_size = 40
 
 settlements.surface_materials = {}
@@ -17,7 +14,6 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
-dofile(modpath.."/bookgen.lua")
 
 settlements.register_settlement = function(settlement_type_name, settlement_def)
 	assert(not settlements.settlement_defs[settlement_type_name])
@@ -196,11 +192,6 @@ local function evaluate_heightmap(heightmap)
 	then
 		return settlements.max_height_difference + 1
 	end
-	-- debug info
-	if settlements.debug == true
-	then
-		minetest.chat_send_all("heightdiff ".. height_diff)
-	end
 	return height_diff
 end
 
@@ -236,7 +227,7 @@ end)
 
 
 local debug_building_index = 0
-local c_dirt_with_grass				= minetest.get_content_id("default:dirt_with_grass")
+local c_dirt_with_grass	= minetest.get_content_id("default:dirt_with_grass")
 local all_schematics
 local function get_next_debug_building()
 	if not all_schematics then
@@ -260,6 +251,11 @@ minetest.register_craftitem("settlements:tool", {
 	inventory_image = "default_tool_woodshovel.png",
 	-- build single house
 	on_use = function(itemstack, placer, pointed_thing)
+		if not minetest.check_player_privs(placer, "server") then
+			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			return
+		end	
+	
 		local center_surface = pointed_thing.under
 		if center_surface then
 			local selected_building = get_next_debug_building()
@@ -277,24 +273,20 @@ minetest.register_craftitem("settlements:tool", {
 			settlements.place_building(vm, built_house, {def={}})
 			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
 			vm:write_to_map()
-
 		end
 	end,
 	-- build settlement
 	on_place = function(itemstack, placer, pointed_thing)
-		-- enable debug routines
-		settlements.debug = true
+		if not minetest.check_player_privs(placer, "server") then
+			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			return
+		end	
+
 		local center_surface = pointed_thing.under
 		if center_surface then
 			local minp = vector.subtract(center_surface, half_map_chunk_size)
 			local maxp = vector.add(center_surface, half_map_chunk_size)
-			
-			local start_time = os.time()
-
 			settlements.generate_settlement(minp, maxp)
-
-			local end_time = os.time()
-			minetest.chat_send_all("Time ".. end_time - start_time)
 		end
 	end
 })

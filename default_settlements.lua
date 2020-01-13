@@ -30,11 +30,6 @@ local function fill_chest(pos)
 	end
 end
 
-local source_texts = {
-	modpath.."/sourcetexts/gulliver.txt",
-	modpath.."/sourcetexts/caveregionsoftheozarksandblackhills.txt",
-}
-
 --local function fill_shelf(pos, author)
 --	local inv = minetest.get_inventory( {type="node", pos=pos} )
 --	for i = 1, math.random(2, 8) do

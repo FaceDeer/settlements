@@ -361,10 +361,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 		end
 	end
 	
-	if settlements.debug then
-		minetest.chat_send_all("built ".. number_built .. " out of " .. number_of_buildings)
-	end
-	-- debugging
+	-- debugging variable
 	settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
 	
 	if number_built == 1 then
@@ -379,12 +376,10 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	return settlement_info
 end
 
---if settlements.debug then
-	minetest.register_on_shutdown(function()
-		minetest.debug(dump(building_counts))
-		minetest.debug(dump(settlement_sizes))
-	end)
---end
+minetest.register_on_shutdown(function()
+	minetest.debug(dump(building_counts))
+	minetest.debug(dump(settlement_sizes))
+end)
 
 local function initialize_nodes(settlement_info)
 	for i, built_house in ipairs(settlement_info) do
@@ -521,10 +516,6 @@ function settlements.place_building(vm, built_house, settlement_info)
 	end
 	if settlement_info.def.replace_with_surface_material then
 		replacements[settlement_info.def.replace_with_surface_material] = platform_material_name
-	end
-	
-	if settlements.debug then
-		minetest.chat_send_all("building " .. built_house.schematic_info.name .. " at " .. minetest.pos_to_string(pos))
 	end
 	
 	local force_place = building_all_info.force_place
