@@ -262,6 +262,6 @@ minetest.register_chatcommand("settlements_regenerate_names_for_type", {
 				settlements.settlements_in_world:insert_area(pos, pos, minetest.serialize(data), id)
 			end
 		end
-		settlements.settlements_save()		
+		settlements.settlements_save()
 	end,
 })
