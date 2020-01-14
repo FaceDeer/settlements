@@ -249,8 +249,8 @@ local function select_replacements(source)
 	return destination
 end
 
-local building_counts = {}
-local settlement_sizes = {}
+--local building_counts = {}
+--local settlement_sizes = {}
 
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
@@ -328,7 +328,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	insert_into_area(center_building, areastore)
 		
 	-- debugging variable
-	building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
+	--building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z = center_surface_pos.x, center_surface_pos.z
 	local r = math.max(townhall.schematic.size.x, townhall.schematic.size.z) + (townhall.buffer or 0)
@@ -349,7 +349,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 						number_built = number_built + 1
 						settlement_info[number_built] = building_info
 						local name_built = building_info.schematic_info.name
-						building_counts[name_built] = (building_counts[name_built] or 0) + 1
+						--building_counts[name_built] = (building_counts[name_built] or 0) + 1
 						if number_of_buildings == number_built then
 							break
 						end
@@ -369,7 +369,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	end
 
 	-- debugging variable
-	settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
+	--settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
 
 	-- add settlement to list
 	settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
@@ -380,10 +380,10 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	return settlement_info
 end
 
-minetest.register_on_shutdown(function()
-	minetest.debug(dump(building_counts))
-	minetest.debug(dump(settlement_sizes))
-end)
+--minetest.register_on_shutdown(function()
+--	minetest.debug(dump(building_counts))
+--	minetest.debug(dump(settlement_sizes))
+--end)
 
 local function initialize_nodes(settlement_info)
 	for i, built_house in ipairs(settlement_info) do

@@ -131,7 +131,6 @@ local function check_distance_other_settlements(center_new_chunk)
 	-- Search through those to find any that are within a spherical volume
 	for i, settlement in pairs(neighbors) do
 		local distance = vector.distance(center_new_chunk, settlement.min)
---		minetest.chat_send_all("dist ".. distance)
 		if distance < settlements.min_dist_settlements then
 			return false
 		end
