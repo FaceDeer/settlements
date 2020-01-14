@@ -148,6 +148,7 @@ local schematic_table = {
 		buffer = 2,
 		max_num = 0.050,
 	},
+	kingsmarket_schematic,
 	{
 		name = "nightmarket",
 		schematic = dofile(schem_path.."nightmarket.lua"),

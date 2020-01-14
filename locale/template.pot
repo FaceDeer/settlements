@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-13 12:14-0700\n"
+"POT-Creation-Date: 2020-01-13 17:09-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,62 +43,95 @@ msgid "@1's market clerk"
 msgstr ""
 
 #: bookgen.lua:138
-msgid "east"
-msgstr ""
-
-#: bookgen.lua:139
-msgid "northeast"
-msgstr ""
-
-#: bookgen.lua:140
-msgid "north"
-msgstr ""
-
-#: bookgen.lua:141
-msgid "northwest"
-msgstr ""
-
-#: bookgen.lua:142
+#: bookgen.lua:154
 msgid "west"
 msgstr ""
 
-#: bookgen.lua:143
+#: bookgen.lua:139
+msgid "west-southwest"
+msgstr ""
+
+#: bookgen.lua:140
 msgid "southwest"
 msgstr ""
 
-#: bookgen.lua:144
+#: bookgen.lua:141
+msgid "south-southwest"
+msgstr ""
+
+#: bookgen.lua:142
 msgid "south"
 msgstr ""
 
-#: bookgen.lua:145
+#: bookgen.lua:143
+msgid "south-southeast"
+msgstr ""
+
+#: bookgen.lua:144
 msgid "southeast"
 msgstr ""
 
-#: bookgen.lua:161
+#: bookgen.lua:145
+msgid "east-southeast"
+msgstr ""
+
+#: bookgen.lua:146
+msgid "east"
+msgstr ""
+
+#: bookgen.lua:147
+msgid "east-northeast"
+msgstr ""
+
+#: bookgen.lua:148
+msgid "northeast"
+msgstr ""
+
+#: bookgen.lua:149
+msgid "north-northeast"
+msgstr ""
+
+#: bookgen.lua:150
+msgid "north"
+msgstr ""
+
+#: bookgen.lua:151
+msgid "north-northwest"
+msgstr ""
+
+#: bookgen.lua:152
+msgid "northwest"
+msgstr ""
+
+#: bookgen.lua:153
+msgid "west-northwest"
+msgstr ""
+
+#: bookgen.lua:168
 msgid "highlands"
 msgstr ""
 
-#: bookgen.lua:163
+#: bookgen.lua:170
 msgid "midlands"
 msgstr ""
 
-#: bookgen.lua:165
+#: bookgen.lua:172
 msgid "lowlands"
 msgstr ""
 
-#: bookgen.lua:167
+#: bookgen.lua:175
 msgid "waters"
 msgstr ""
 
-#: bookgen.lua:179
+#: bookgen.lua:187
 msgid "A travel guide to @1"
 msgstr ""
 
-#: bookgen.lua:180
+#: bookgen.lua:188
 msgid "a resident of @1"
 msgstr ""
 
-#: bookgen.lua:187
+#: bookgen.lua:195
 msgid "In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5."
 msgstr ""
 
