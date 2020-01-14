@@ -1,5 +1,6 @@
 settlements_minimum_distance_between_settlements (Minimum distance between settlements) int 500
 settlements_maximum_height_difference (Maximum ground height difference allowed in settlement site) int 10
+settlements_generate_books (Generate books to populate shelves in settlements) bool true
 
 [HUD display]
 #If this is disabled, player discovery tracking is also disabled (though

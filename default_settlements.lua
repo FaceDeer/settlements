@@ -3,6 +3,8 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 -- internationalization boilerplate
 local S, NS = dofile(modpath.."/intllib.lua")
 
+local generate_books = minetest.settings:get_bool("settlements_generate_books", true)
+
 dofile(modpath.."/bookgen.lua")
 
 ----------------------------------------------------------------------------------------------------------------
@@ -63,7 +65,7 @@ local initialize_node = function(pos, node, node_def, settlement_info)
 	if node.name == "default:chest" then
 		fill_chest(pos)
 	end
-	if node.name == "default:bookshelf" then
+	if generate_books and node.name == "default:bookshelf" then
 		fill_shelf(pos, settlement_info.name)
 	end
 	if minetest.get_item_group(node.name, "plant") > 0 then
@@ -246,6 +248,7 @@ local medieval_settlements = {
 
 settlements.register_settlement("medieval", medieval_settlements)
 
+if generate_books then
 local half_map_chunk_size = settlements.half_map_chunk_size
 minetest.register_abm({
     label = "Settlement book authoring",
@@ -297,7 +300,7 @@ minetest.register_abm({
 		end
 	end,
 })
-
+end
 
 end
 

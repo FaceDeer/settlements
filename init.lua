@@ -36,21 +36,6 @@ function settlements.convert_mts_to_lua(schem_path)
 	file:close()
 end
 
-function settlements.mts_save()
-
-	local schematic2 = dofile(schem_path.."kingsmarket.lua")
-	local seb = minetest.serialize_schematic(schematic2, "mts", {})
-	local filename = schem_path .. "kingsmarket.mts"
-	--filename = filename:gsub("\"", "\\\""):gsub("\\", "\\\\")
-	local file, err = io.open(filename, "wb")
-	if err == nil and seb then
-		file:write(seb)
-		file:flush()
-		file:close()
-	end
-	print("Wrote: " .. filename)
-end
-
 dofile(modpath.."/default_settlements.lua")
 
 ----------------------------------------------------------------------------
