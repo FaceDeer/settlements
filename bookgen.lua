@@ -177,7 +177,7 @@ local get_altitude = function(pos)
 end
 
 settlements.generate_travel_guide = function(source_pos, source_name)
-	local range = math.random(1000, 5000)
+	local range = math.random(settlements.min_dist_settlements*2, settlements.min_dist_settlements*5)
 	local target = get_random_settlement_within_range(source_pos, range)
 	if not target then
 		return
