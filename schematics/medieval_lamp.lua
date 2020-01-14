@@ -16,18 +16,9 @@ local n15 = { name = "stairs:stair_cobble", param2 = 2 }
 local n16 = { name = "stairs:stair_cobble", param2 = 22 }
 
 return {
-	yslice_prob = {
-		
-	},
-	size = {
-		y = 7,
-		x = 3,
-		z = 3
-	}
-,
+	yslice_prob = {},
+	size = {y = 7, x = 3, z = 3},
 	data = {
-
-
 		-- z=-2, y=-6
 		n1, n1, n1, 
 		-- z=-2, y=-5

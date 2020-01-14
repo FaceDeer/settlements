@@ -30,7 +30,7 @@ local n29 = { name = "default:ladder_wood", param2 = 3 }
 local n30 = { name = "default:chest" }
 local n31 = { name = "stairs:stair_desert_sandstone_brick", param2 = 11 }
 local n32 = { name = "doors:trapdoor", param2 = 3 }
-local n33 = { name = "default:chest", param2 = 3 }
+local n33 = { name = "default:bookshelf", param2 = 3 }
 local n34 = { name = "default:torch_wall", param2 = 4 }
 local n35 = { name = "stairs:slab_wood", param2 = 20 }
 local n36 = { name = "stairs:stair_desert_sandstone_brick", param2 = 5 }

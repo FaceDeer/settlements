@@ -1,21 +1,12 @@
 local n1 = { name = "default:coral_skeleton" }
 local n3 = { name = "default:coral_orange" }
-local n4 = { name = "default:water_source" }
+local n4 = { name = "default:water_source", prob = 0}
 local n5 = { name = "default:coral_orange", prob = 64}
 
 return {
-	yslice_prob = {
-		
-	},
-	size = {
-		y = 8,
-		x = 7,
-		z = 7
-	}
-,
+	yslice_prob = {},
+	size = {y = 8, x = 7, z = 7},
 	data = {
-
-
 		-- z=0, y=-7
 		n1, n1, n1, n1, n1, n1, n1, 
 		-- z=0, y=-6

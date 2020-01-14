@@ -8,12 +8,14 @@ settlements.settlement_defs = {}
 -- Minimum distance between settlements
 settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
 -- maximum allowed difference in height for building a settlement
-settlements.max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
+local max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
 
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
+dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
+dofile(modpath.."/admin_tools.lua")
 
 settlements.register_settlement = function(settlement_type_name, settlement_def)
 	assert(not settlements.settlement_defs[settlement_type_name])
@@ -37,86 +39,6 @@ function settlements.convert_mts_to_lua(schem_path)
 end
 
 dofile(modpath.."/default_settlements.lua")
-
-----------------------------------------------------------------------------
-local worldpath = minetest.get_worldpath()
-local areastore_filename = worldpath.."/settlements_areastore.txt"
-
--- load list of generated settlements
-local function settlements_load()
-	local area_file = io.open(areastore_filename, "r")
-	
-	-- Compatibility with old versions
-	local old_file = io.open(worldpath.."/settlements.txt", "r")
-	if old_file and not area_file then
-		local settlements = minetest.deserialize(old_file:read("*all"))
-		if type(settlements) == "table" then
-			local areastore = AreaStore()
-			for _, pos in ipairs(settlements) do
-				pos = vector.add(pos, {x=5, y=0, z=5}) -- Shift it over to put it in the center of town hall
-				local name = "Town"
-				if minetest.get_modpath("namegen") then
-					name = namegen.generate("settlement_towns")
-				end
-				local discovered_by = {}
-				local settlement_type = "medieval"
-				areastore:insert_area(pos, pos, minetest.serialize({name=name, discovered_by=discovered_by,settlement_type=settlement_type}))
-			end
-			return areastore
-		end
-	end
-	------------------------------------
-	local areastore = AreaStore()
-	if not area_file then
-		return areastore
-	end
-	areastore:from_file(areastore_filename)
-	return areastore
-end
-settlements.settlements_in_world = settlements_load()
-
--- save list of generated settlements
-function settlements.settlements_save()
-	settlements.settlements_in_world:to_file(areastore_filename)
-end
-
--------------------------------------------------------------------------------
-
--- register block for npc spawn
-local function deep_copy(table_in)
-	local table_out = {}
-	for index, value in pairs(table_in) do
-		if type(value) == "table" then
-			table_out[index] = deep_copy(value)
-		else
-			table_out[index] = value
-		end
-	end
-	return table_out
-end
-
-local junglewood_def = deep_copy(minetest.registered_nodes["default:junglewood"])
-minetest.register_node("settlements:junglewood", junglewood_def)
--- register inhabitants
-if minetest.get_modpath("mobs_npc") ~= nil then
-	mobs:register_spawn("mobs_npc:npc", --name
-		{"settlements:junglewood"}, --nodes
-		20, --max_light
-		0, --min_light
-		20, --chance
-		2, --active_object_count
-		31000, --max_height
-		nil) --day_toggle
-	mobs:register_spawn("mobs_npc:trader", --name
-		{"settlements:junglewood"}, --nodes
-		20, --max_light
-		0, --min_light
-		20, --chance
-		2, --active_object_count
-		31000, --max_height
-		nil)--day_toggle
-end
-
 
 -------------------------------------------------------------------------------
 -- check distance to other settlements
@@ -154,7 +76,7 @@ local function evaluate_heightmap(heightmap)
 			if heightmap[i] == -31000 or
 			heightmap[i] == 31000
 			then
-				return settlements.max_height_difference + 1
+				return max_height_difference + 1
 			end
 			if heightmap[i] < min_y
 			then
@@ -174,7 +96,7 @@ local function evaluate_heightmap(heightmap)
 	-- filter buggy heightmaps
 	if height_diff <= 1
 	then
-		return settlements.max_height_difference + 1
+		return max_height_difference + 1
 	end
 	return height_diff
 end
@@ -198,7 +120,7 @@ minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlements on (too) uneven terrain
 	local heightmap = minetest.get_mapgen_object("heightmap")
 	local height_difference = evaluate_heightmap(heightmap)
-	if height_difference > settlements.max_height_difference
+	if height_difference > max_height_difference
 	then
 		return
 	end
@@ -208,69 +130,3 @@ minetest.register_on_generated(function(minp, maxp)
 
 	settlements.generate_settlement_vm(vm, va, minp, maxp)
 end)
-
-
-local debug_building_index = 0
-local c_dirt_with_grass	= minetest.get_content_id("default:dirt_with_grass")
-local all_schematics
-local function get_next_debug_building()
-	if not all_schematics then
-		all_schematics = {}
-		for _, settlement_def in pairs(settlements.settlement_defs) do
-			for _, building_info in ipairs(settlement_def.schematics) do
-				table.insert(all_schematics, building_info)
-			end
-		end
-	end
-	debug_building_index = debug_building_index + 1
-	if debug_building_index > #all_schematics then
-		debug_building_index = 1
-	end
-	return all_schematics[debug_building_index]
-end
-
--- manually place buildings, for debugging only
-minetest.register_craftitem("settlements:tool", {
-	description = "settlements build tool",
-	inventory_image = "default_tool_woodshovel.png",
-	-- build single house
-	on_use = function(itemstack, placer, pointed_thing)
-		if not minetest.check_player_privs(placer, "server") then
-			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
-			return
-		end	
-	
-		local center_surface = pointed_thing.under
-		if center_surface then
-			local selected_building = get_next_debug_building()
-			local built_house = {}
-			built_house.schematic_info = selected_building
-			built_house.center_pos = center_surface -- we're not terraforming so this doesn't matter
-			built_house.build_pos_min = center_surface
-			built_house.rotation = "0"
-			built_house.surface_mat = c_dirt_with_grass
-			
-			local vm = minetest.get_voxel_manip()
-			local maxp = vector.add(center_surface, selected_building.schematic.size)
-			local emin, emax = vm:read_from_map(center_surface, maxp)
-
-			settlements.place_building(vm, built_house, {def={}})
-			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
-			vm:write_to_map()
-		end
-	end,
-	-- build settlement
-	on_place = function(itemstack, placer, pointed_thing)
-		if not minetest.check_player_privs(placer, "server") then
-			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
-			return
-		end	
-
-		local center_surface = pointed_thing.under
-		if center_surface then
-			local minp = vector.subtract(center_surface, half_map_chunk_size)
-			local maxp = vector.add(center_surface, half_map_chunk_size)
-			settlements.generate_settlement(minp, maxp)
-		end
-	end
-})

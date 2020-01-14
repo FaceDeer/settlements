@@ -4,6 +4,10 @@ local schematic_table = settlements.schematic_table
 
 local c_air = minetest.get_content_id("air")
 
+local default_path_material = "default:gravel"
+local default_deep_platform = "default:stone"
+local default_shallow_platform = "default:dirt"
+
 local surface_mats = settlements.surface_materials
 
 -- function to fill empty space below baseplate when building on a hill
@@ -40,8 +44,8 @@ end
 -- function clear space above baseplate
 local function terraform(data, va, settlement_info)
 	local c_air = minetest.get_content_id(settlement_info.def.platform_air or "air")
-	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or "default:dirt")
-	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or "default:stone")
+	local c_shallow = minetest.get_content_id(settlement_info.def.platform_shallow or default_shallow_platform)
+	local c_deep = minetest.get_content_id(settlement_info.def.platform_deep or default_deep_platform)
 	local fheight
 	local fwidth
 	local fdepth
@@ -411,7 +415,7 @@ end
 
 -- generate paths between buildings
 local function paths(data, va, settlement_info)
-	local c_gravel = minetest.get_content_id(settlement_info.def.path_material or "default:gravel")
+	local c_path_material = minetest.get_content_id(settlement_info.def.path_material or default_path_material)
 	local starting_point
 	local end_point
 	local distance
@@ -477,11 +481,11 @@ local function paths(data, va, settlement_info)
 				end
 				-- find surface of new starting point
 				local surface_point, surface_mat = find_surface(starting_point, data, va)
-				-- replace surface node with default:gravel
+				-- replace surface node with path material
 				if surface_point
 				then
 					local vi = va:index(surface_point.x, surface_point.y, surface_point.z)
-					data[vi] = c_gravel
+					data[vi] = c_path_material
 
 					-- don't set y coordinate, surface might be too low or high
 					starting_point.x = surface_point.x

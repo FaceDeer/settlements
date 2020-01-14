@@ -3,7 +3,7 @@ if not minetest.settings:get_bool("settlements_show_in_hud", true) then
 end
 
 local requires_mappingkit = minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
-		and minetest.registered_items["map:mapping_kit"]
+	and minetest.registered_items["map:mapping_kit"] -- rather than test for the map modpath, test whether the mapping_kit has been registered.
 
 local discovery_range = tonumber(minetest.settings:get("settlements_discovery_range")) or 30
 local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 600

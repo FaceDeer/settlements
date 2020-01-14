@@ -52,19 +52,16 @@ if minetest.get_modpath("commoditymarket") and minetest.registered_items["commod
 	n43 = { name = "commoditymarket:kings_market", param2 = 1 }
 end
 
+if not minetest.get_modpath("vessels") then
+	n17 = { name = "default:chest", param2 = 3 }
+	n21 = { name = "default:chest", param2 = 1 }
+	n25 = { name = "default:chest", param2 = 2 }
+end
+
 return {
-	yslice_prob = {
-		
-	},
-	size = {
-		y = 10,
-		x = 11,
-		z = 11
-	}
-,
+	yslice_prob = {},
+	size = {y = 10, x = 11, z = 11},
 	data = {
-
-
 		-- z=0, y=-9
 		n1, n1, n1, n1, n1, n1, n1, n1, n1, n1, n1, 
 		-- z=0, y=-8
