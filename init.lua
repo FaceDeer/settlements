@@ -1,276 +1,277 @@
--- eclipse debugging lines
---require("debugger")(idehost, ideport, idekey)
-
---zerobrane debugging lines
---package.cpath = package.cpath .. ";/usr/share/lua/5.2/?.so"
---package.path = package.path .. ";/usr/share/zbstudio/lualibs/mobdebug/?.lua"
---require('mobdebug').start()
-
 settlements = {}
-settlements.modpath = minetest.get_modpath("settlements");
 
-vm, data, va, emin, emax = 1
+settlements.half_map_chunk_size = 40
 
-dofile(settlements.modpath.."/const.lua")
-dofile(settlements.modpath.."/utils.lua")
-dofile(settlements.modpath.."/foundation.lua")
-dofile(settlements.modpath.."/buildings.lua")
-dofile(settlements.modpath.."/paths.lua")
-dofile(settlements.modpath.."/convert_lua_mts.lua")
---
--- load settlements on server
---
-settlements_in_world = settlements.load()
-settlements.grundstellungen()
---
+settlements.surface_materials = {}
+settlements.settlement_defs = {}
+
+-- Minimum distance between settlements
+settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
+-- maximum allowed difference in height for building a settlement
+settlements.max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
+
+local modpath = minetest.get_modpath(minetest.get_current_modname())
+
+dofile(modpath.."/buildings.lua")
+dofile(modpath.."/hud.lua")
+
+settlements.register_settlement = function(settlement_type_name, settlement_def)
+	assert(not settlements.settlement_defs[settlement_type_name])
+	settlement_def.name = settlement_type_name
+	settlements.settlement_defs[settlement_type_name] = settlement_def
+	for _, material in ipairs(settlement_def.surface_materials) do
+		local c_mat = minetest.get_content_id(material)
+		local material_list = settlements.surface_materials[c_mat] or {}
+		settlements.surface_materials[c_mat] = material_list
+		table.insert(material_list, settlement_def)
+	end
+end
+
+-- Interconverting lua and mts formatted schematics
+-- Useful for modders adding existing schematics that are in mts format
+function settlements.convert_mts_to_lua(schem_path)
+	local str = minetest.serialize_schematic(schem_path, "lua", {lua_use_comments = true})
+	local file = io.open(schem_path:sub(1,-4).."lua", "w")
+	file:write(str.."\nreturn schematic")
+	file:close()
+end
+
+dofile(modpath.."/default_settlements.lua")
+
+----------------------------------------------------------------------------
+local worldpath = minetest.get_worldpath()
+local areastore_filename = worldpath.."/settlements_areastore.txt"
+
+-- load list of generated settlements
+local function settlements_load()
+	local area_file = io.open(areastore_filename, "r")
+	
+	-- Compatibility with old versions
+	local old_file = io.open(worldpath.."/settlements.txt", "r")
+	if old_file and not area_file then
+		local settlements = minetest.deserialize(old_file:read("*all"))
+		if type(settlements) == "table" then
+			local areastore = AreaStore()
+			for _, pos in ipairs(settlements) do
+				pos = vector.add(pos, {x=5, y=0, z=5}) -- Shift it over to put it in the center of town hall
+				local name = "Town"
+				if minetest.get_modpath("namegen") then
+					name = namegen.generate("settlement_towns")
+				end
+				local discovered_by = {}
+				local settlement_type = "medieval"
+				areastore:insert_area(pos, pos, minetest.serialize({name=name, discovered_by=discovered_by,settlement_type=settlement_type}))
+			end
+			return areastore
+		end
+	end
+	------------------------------------
+	local areastore = AreaStore()
+	if not area_file then
+		return areastore
+	end
+	areastore:from_file(areastore_filename)
+	return areastore
+end
+settlements.settlements_in_world = settlements_load()
+
+-- save list of generated settlements
+function settlements.settlements_save()
+	settlements.settlements_in_world:to_file(areastore_filename)
+end
+
+-------------------------------------------------------------------------------
+
 -- register block for npc spawn
---
-minetest.register_node("settlements:junglewood", {
-    description = "special junglewood floor",
-    tiles = {"default_junglewood.png"},
-    groups = {choppy=3, wood=2},
-    sounds = default.node_sound_wood_defaults(),
-  })
---
+local function deep_copy(table_in)
+	local table_out = {}
+	for index, value in pairs(table_in) do
+		if type(value) == "table" then
+			table_out[index] = deep_copy(value)
+		else
+			table_out[index] = value
+		end
+	end
+	return table_out
+end
+
+local junglewood_def = deep_copy(minetest.registered_nodes["default:junglewood"])
+minetest.register_node("settlements:junglewood", junglewood_def)
 -- register inhabitants
---
 if minetest.get_modpath("mobs_npc") ~= nil then
-  mobs:register_spawn("mobs_npc:npc", --name
-    {"settlements:junglewood"}, --nodes
-    20, --max_light
-    0, --min_light
-    20, --chance
-    2, --active_object_count
-    31000, --max_height
-    nil) --day_toggle
-  mobs:register_spawn("mobs_npc:trader", --name
-    {"settlements:junglewood"}, --nodes
-    20, --max_light
-    0, --min_light
-    20, --chance
-    2, --active_object_count
-    31000, --max_height
-    nil)--day_toggle
-end 
---
--- on map generation, try to build a settlement
---
+	mobs:register_spawn("mobs_npc:npc", --name
+		{"settlements:junglewood"}, --nodes
+		20, --max_light
+		0, --min_light
+		20, --chance
+		2, --active_object_count
+		31000, --max_height
+		nil) --day_toggle
+	mobs:register_spawn("mobs_npc:trader", --name
+		{"settlements:junglewood"}, --nodes
+		20, --max_light
+		0, --min_light
+		20, --chance
+		2, --active_object_count
+		31000, --max_height
+		nil)--day_toggle
+end
+
+
+-------------------------------------------------------------------------------
+-- check distance to other settlements
+-------------------------------------------------------------------------------
+local function check_distance_other_settlements(center_new_chunk)
+	local min_edge = vector.subtract(center_new_chunk, settlements.min_dist_settlements)
+	local max_edge = vector.add(center_new_chunk, settlements.min_dist_settlements)
+	
+	-- This gets all neighbors within a cube-shaped volume
+	local neighbors = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true)
+
+	-- Search through those to find any that are within a spherical volume
+	for i, settlement in pairs(neighbors) do
+		local distance = vector.distance(center_new_chunk, settlement.min)
+--		minetest.chat_send_all("dist ".. distance)
+		if distance < settlements.min_dist_settlements then
+			return false
+		end
+	end	
+	return true
+end
+
+-------------------------------------------------------------------------------
+-- evaluate heightmap
+-------------------------------------------------------------------------------
+local function evaluate_heightmap(heightmap)
+	-- max height and min height, initialize with impossible values for easier first time setting
+	local max_y = -50000
+	local min_y = 50000
+	-- only evaluate the center square of heightmap 40 x 40
+	local square_start = 1621
+	local square_end = 1661
+	for j = 1 , 40, 1 do
+		for i = square_start, square_end, 1 do
+			-- skip buggy heightmaps, return high value
+			if heightmap[i] == -31000 or
+			heightmap[i] == 31000
+			then
+				return settlements.max_height_difference + 1
+			end
+			if heightmap[i] < min_y
+			then
+				min_y = heightmap[i]
+			end
+			if heightmap[i] > max_y
+			then
+				max_y = heightmap[i]
+			end
+		end
+		-- set next line
+		square_start = square_start + 80
+		square_end = square_end + 80
+	end
+	-- return the difference between highest and lowest pos in chunk
+	local height_diff = max_y - min_y
+	-- filter buggy heightmaps
+	if height_diff <= 1
+	then
+		return settlements.max_height_difference + 1
+	end
+	return height_diff
+end
+
+local half_map_chunk_size = settlements.half_map_chunk_size
+
 minetest.register_on_generated(function(minp, maxp)
-    --
-    -- needed for manual and automated settlement building
-    --
-    heightmap = minetest.get_mapgen_object("heightmap")
-    --
-    -- randomly try to build settlements
-    -- 
-    if math.random(1,10)<6 then 
-      --
-      -- time between creation of two settlements
-      --
-      if os.difftime(os.time(), settlements.last_settlement) < settlements.min_timer 
-      then
-        return
-      end
---      if settlements.debug == true then
---         minetest.chat_send_all("Last opportunity ".. os.difftime(os.time(), settlements.last_settlement))
---      end
-      --
-      -- don't build settlement underground
-      --
-      if maxp.y < 0 then 
-        return 
-      end
-      --
-      -- don't build settlements too close to each other
-      --
-      local center_of_chunk = { 
-        x=maxp.x-half_map_chunk_size, 
-        y=maxp.y-half_map_chunk_size, 
-        z=maxp.z-half_map_chunk_size
-      } 
-      local dist_ok = settlements.check_distance_other_settlements(center_of_chunk)
-      if dist_ok == false 
-      then
-        return
-      end
-      --
-      -- don't build settlements on (too) uneven terrain
-      --
-      local height_difference = settlements.evaluate_heightmap(minp, maxp)
-      if height_difference > max_height_difference 
-      then
-        return
-      end
-      -- 
-      -- if no hard showstoppers prevent the settlement -> try to do it (check for suitable terrain)
-      --
-      -- set timestamp of actual settlement
-      --
-      settlements.last_settlement = os.time()
-      
-      -- waiting necessary for chunk to load, otherwise, townhall is not in the middle, no map found behind townhall
-      minetest.after(3, function()
-          --
-          -- fill settlement_info with buildings and their data
-          --
-          if settlements.lvm == true
-          then
-            --
-            -- get LVM of current chunk
-            --
-            vm, data, va, emin, emax = settlements.getlvm(minp, maxp)
-            suitable_place_found = settlements.create_site_plan_lvm(maxp, minp)
-          else
-            suitable_place_found = settlements.create_site_plan(maxp, minp)
-          end
-          if not suitable_place_found
-          then
-            return
-          end
-          --
-          -- evaluate settlement_info and prepair terrain
-          --
-          if settlements.lvm == true
-          then
-            settlements.terraform_lvm()
-          else
-            settlements.terraform()
-          end
+	-- don't build settlement underground
+	if maxp.y < -100 then
+		return
+	end
 
-          --
-          -- evaluate settlement_info and build paths between buildings
-          --
-          if settlements.lvm == true
-          then
-            settlements.paths_lvm(minp)
-          else
-            settlements.paths()
-          end
-          --
-          -- evaluate settlement_info and place schematics
-          --
-          if settlements.lvm == true
-          then
-            vm:set_data(data)
-            settlements.place_schematics_lvm()
-            vm:write_to_map(true)
-          else
-            settlements.place_schematics()
-          end
-          --
-          -- evaluate settlement_info and initialize furnaces and chests
-          --
-          settlements.initialize_nodes()
-          
-        end)
+	-- don't build settlements too close to each other
+	local center_of_chunk = vector.subtract(maxp, half_map_chunk_size)
+	local dist_ok = check_distance_other_settlements(center_of_chunk)
+	if dist_ok == false
+	then
+		return
+	end
+
+	-- don't build settlements on (too) uneven terrain
+	local heightmap = minetest.get_mapgen_object("heightmap")
+	local height_difference = evaluate_heightmap(heightmap)
+	if height_difference > settlements.max_height_difference
+	then
+		return
+	end
+	
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+
+	settlements.generate_settlement_vm(vm, va, minp, maxp)
+end)
 
 
-    end
-  end)
---
+local debug_building_index = 0
+local c_dirt_with_grass	= minetest.get_content_id("default:dirt_with_grass")
+local all_schematics
+local function get_next_debug_building()
+	if not all_schematics then
+		all_schematics = {}
+		for _, settlement_def in pairs(settlements.settlement_defs) do
+			for _, building_info in ipairs(settlement_def.schematics) do
+				table.insert(all_schematics, building_info)
+			end
+		end
+	end
+	debug_building_index = debug_building_index + 1
+	if debug_building_index > #all_schematics then
+		debug_building_index = 1
+	end
+	return all_schematics[debug_building_index]
+end
+
 -- manually place buildings, for debugging only
---
 minetest.register_craftitem("settlements:tool", {
-    description = "settlements build tool",
-    inventory_image = "default_tool_woodshovel.png",
-    --
-    -- build single house
-    --
-    on_use = function(itemstack, placer, pointed_thing)
-      local center_surface = pointed_thing.under
-      if center_surface then
-        local building_all_info = {name = "blacksmith", 
-          mts = schem_path.."blacksmith.mts", 
-          hsize = 13, 
-          max_num = 0.9, 
-          rplc = "n"}
-        settlements.build_schematic(center_surface, 
-          building_all_info["mts"],
-          building_all_info["rplc"], 
-          building_all_info["name"])
+	description = "settlements build tool",
+	inventory_image = "default_tool_woodshovel.png",
+	-- build single house
+	on_use = function(itemstack, placer, pointed_thing)
+		if not minetest.check_player_privs(placer, "server") then
+			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			return
+		end	
+	
+		local center_surface = pointed_thing.under
+		if center_surface then
+			local selected_building = get_next_debug_building()
+			local built_house = {}
+			built_house.schematic_info = selected_building
+			built_house.center_pos = center_surface -- we're not terraforming so this doesn't matter
+			built_house.build_pos_min = center_surface
+			built_house.rotation = "0"
+			built_house.surface_mat = c_dirt_with_grass
+			
+			local vm = minetest.get_voxel_manip()
+			local maxp = vector.add(center_surface, selected_building.schematic.size)
+			local emin, emax = vm:read_from_map(center_surface, maxp)
 
---        settlements.convert_mts_to_lua()
---        settlements.mts_save()
-      end
-    end,
-    --
-    -- build ssettlement
-    --
-    on_place = function(itemstack, placer, pointed_thing)
-      -- enable debug routines
-      settlements.debug = true
-      local center_surface = pointed_thing.under
-      if center_surface then
-        local minp = {
-          x=center_surface.x-half_map_chunk_size, 
-          y=center_surface.y-half_map_chunk_size, 
-          z=center_surface.z-half_map_chunk_size
-        }
-        local maxp = {
-          x=center_surface.x+half_map_chunk_size, 
-          y=center_surface.y+half_map_chunk_size, 
-          z=center_surface.z+half_map_chunk_size
-        }
-        --
-        -- get LVM of current chunk
-        --
-        vm, data, va, emin, emax = settlements.getlvm(minp, maxp)
-        --
-        -- fill settlement_info with buildings and their data
-        --
-        local start_time = os.time()
-        if settlements.lvm == true
-        then
-          suitable_place_found = settlements.create_site_plan_lvm(maxp, minp)
-        else
-          suitable_place_found = settlements.create_site_plan(maxp, minp)
-        end
-        if not suitable_place_found
-        then
-          return
-        end
-        --
-        -- evaluate settlement_info and prepair terrain
-        --
-        if settlements.lvm == true
-        then
-          settlements.terraform_lvm()
-        else
-          settlements.terraform()
-        end
+			settlements.place_building(vm, built_house, {def={}})
+			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
+			vm:write_to_map()
+		end
+	end,
+	-- build settlement
+	on_place = function(itemstack, placer, pointed_thing)
+		if not minetest.check_player_privs(placer, "server") then
+			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			return
+		end	
 
-        --
-        -- evaluate settlement_info and build paths between buildings
-        --
-        if settlements.lvm == true
-        then
-          settlements.paths_lvm(minp)
-        else
-          settlements.paths()
-        end
-        --
-        -- evaluate settlement_info and place schematics
-        --
-        if settlements.lvm == true
-        then
-          vm:set_data(data)
-          settlements.place_schematics_lvm()
-          vm:write_to_map(true)
-        else
-          settlements.place_schematics()
-        end
-
-        --
-        -- evaluate settlement_info and initialize furnaces and chests
-        --
-        settlements.initialize_nodes()
-        local end_time = os.time()
-        minetest.chat_send_all("Zeit ".. end_time - start_time)
---
-        --settlements.convert_mts_to_lua()
-        --settlements.mts_save()
-
-      end
-    end
-  })
-
+		local center_surface = pointed_thing.under
+		if center_surface then
+			local minp = vector.subtract(center_surface, half_map_chunk_size)
+			local maxp = vector.add(center_surface, half_map_chunk_size)
+			settlements.generate_settlement(minp, maxp)
+		end
+	end
+})
