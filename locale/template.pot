@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-13 17:09-0700\n"
+"POT-Creation-Date: 2020-01-14 20:05-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,7 +135,101 @@ msgstr ""
 msgid "In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5."
 msgstr ""
 
-#: default_settlements.lua:59
-#: default_settlements.lua:60
+#: chatcommands.lua:8
+msgid "List the settlements you know about"
+msgstr ""
+
+#: chatcommands.lua:23
+msgid "@1 is located @2m away at @3"
+msgstr ""
+
+#: chatcommands.lua:43
+msgid "Set all settlements as known"
+msgstr ""
+
+#: chatcommands.lua:44
+#: chatcommands.lua:56
+msgid "player_name, or nothing for yourself"
+msgstr ""
+
+#: chatcommands.lua:55
+msgid "Set all settlements as unknown to you or another player"
+msgstr ""
+
+#: chatcommands.lua:90
+msgid "Change the name of the nearest settlement within visible range"
+msgstr ""
+
+#: chatcommands.lua:91
+msgid ""
+"The new name for this settlement, or nothing to generate a new random name"
+msgstr ""
+
+#: chatcommands.lua:103
+msgid "Missing settlement definition for @1"
+msgstr ""
+
+#: chatcommands.lua:114
+msgid "Settlement successfully renamed from @1 to @2."
+msgstr ""
+
+#: chatcommands.lua:115
+#: chatcommands.lua:172
+msgid ""
+"Existing HUD waypoints for nearby players won't update until they go out of "
+"range and the waypoint is recreated again."
+msgstr ""
+
+#: chatcommands.lua:119
+#: chatcommands.lua:179
+msgid "No known settlements within @1m found."
+msgstr ""
+
+#: chatcommands.lua:124
+msgid "Regenerate the names for all settments of a particular type"
+msgstr ""
+
+#: chatcommands.lua:125
+msgid "The settlement type"
+msgstr ""
+
+#: chatcommands.lua:129
+msgid "A non-empty parameter is required"
+msgstr ""
+
+#: chatcommands.lua:134
+msgid "Unrecognized settlement type"
+msgstr ""
+
+#: chatcommands.lua:146
+msgid "Renamed @1 to @2"
+msgstr ""
+
+#: chatcommands.lua:157
+msgid "Remove the nearest settlement within a certain range (default 40)"
+msgstr ""
+
+#: chatcommands.lua:158
+msgid "range"
+msgstr ""
+
+#: chatcommands.lua:171
+msgid "Settlement @1 successfully removed."
+msgstr ""
+
+#: chatcommands.lua:175
+msgid "Error removing settlement @1."
+msgstr ""
+
+#: hud.lua:100
+msgid "You've discovered @1!"
+msgstr ""
+
+#: hud.lua:103
+msgid "OK"
+msgstr ""
+
+#: settlements_medieval.lua:86
+#: settlements_medieval.lua:87
 msgid "@1 Town Hall"
 msgstr ""

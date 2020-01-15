@@ -259,7 +259,7 @@ end
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
-local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
+local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	-- find center of chunk
 	local center = {
 		x=maxp.x-half_map_chunk_size,
@@ -291,7 +291,7 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	local settlement_def = settlement_defs[math.random(1, #settlement_defs)]
 	
 	-- Get a name for the settlement.
-	local name = settlement_def.generate_name(center)
+	local name = existing_settlement_name or settlement_def.generate_name(center)
 	
 	local min_number = settlement_def.building_count_min or 5
 	local max_number = settlement_def.building_count_max or 25
@@ -375,11 +375,13 @@ local function create_site_plan(minp, maxp, data, va, surface_min, surface_max)
 	-- debugging variable
 	--settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
 
-	-- add settlement to list
-	settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
-		minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_def.name}))
-	-- save list to file
-	settlements.settlements_save()
+	if not existing_settlement_name then
+		-- add settlement to list
+		settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
+			minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_def.name}))
+		-- save list to file
+		settlements.settlements_save()
+	end
 
 	return settlement_info
 end
@@ -542,10 +544,10 @@ function settlements.place_building(vm, built_house, settlement_info)
 end
 
 local data = {} -- for better memory management, use externally-allocated buffer
-settlements.generate_settlement_vm = function(vm, va, minp, maxp)
+settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settlement_name)
 	vm:get_data(data)
 	
-	local settlement_info = create_site_plan(minp, maxp, data, va)
+	local settlement_info = create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	if not settlement_info
 	then
 		return

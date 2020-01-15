@@ -15,6 +15,7 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
+dofile(modpath.."/chatcommands.lua")
 dofile(modpath.."/admin_tools.lua")
 
 settlements.register_settlement = function(settlement_type_name, settlement_def)
@@ -106,6 +107,19 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlement underground
 	if maxp.y < -100 then
+		return
+	end
+	
+	local existing_settlements = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true, false, true)
+	local id, data = next(existing_settlements)
+	if id ~= nil then
+		-- There's already a settlement in this chunk despite us being in mapgen.
+		-- This chunk must have been previously generated and is now being re-generated. Override
+		-- any further checks and try building a settlement here.
+		local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+		local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+		data = minetest.deserialize(data.data)
+		settlements.generate_settlement_vm(vm, va, minp, maxp, data.name)
 		return
 	end
 
