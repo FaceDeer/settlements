@@ -62,6 +62,19 @@ local remove_distant_hud_markers = function()
 	end
 end
 
+-- For flushing outdated HUD markers when certain admin commands are performed.
+settlements.remove_all_hud_markers = function()
+	for player_name, waypoints in pairs(player_huds) do
+		local player = minetest.get_player_by_name(player_name)
+		if player then
+			for pos_hash, hud_id in pairs(waypoints) do
+				player:hud_remove(hud_id)
+			end
+		end
+	end
+	player_huds = {}
+end
+
 local elapsed = 0
 minetest.register_globalstep(function(dtime)
 	elapsed = elapsed + dtime

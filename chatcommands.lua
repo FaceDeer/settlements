@@ -111,8 +111,8 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 			settlements.settlements_in_world:insert_area(min_pos, min_pos, minetest.serialize(min_data), min_id)
 			settlements.settlements_save()
 			minetest.log("action", "[settlements] Renamed " .. oldname .. " to " .. param)
-			minetest.chat_send_player(name, S("Settlement successfully renamed from @1 to @2.", oldname, param)
-				.. " " .. S("Existing HUD waypoints for nearby players won't update until they go out of range and the waypoint is recreated again."))
+			minetest.chat_send_player(name, S("Settlement successfully renamed from @1 to @2.", oldname, param))
+			settlements.remove_all_hud_markers()
 			return
 		end
 		
@@ -150,6 +150,7 @@ minetest.register_chatcommand("settlements_regenerate_names_for_type", {
 			end
 		end
 		settlements.settlements_save()
+		settlements.remove_all_hud_markers()
 	end,
 })
 
@@ -168,8 +169,8 @@ minetest.register_chatcommand("settlements_remove_nearest", {
 			if result then
 				settlements.settlements_save()
 				minetest.log("action", "[settlements] Removed " .. min_data.name)
-				minetest.chat_send_player(name, S("Settlement @1 successfully removed.", min_data.name)
-					.." "..S("Existing HUD waypoints for nearby players won't update until they go out of range and the waypoint is recreated again."))
+				minetest.chat_send_player(name, S("Settlement @1 successfully removed.", min_data.name))
+				settlements.remove_all_hud_markers()
 				return
 			else
 				minetest.chat_send_player(name, S("Error removing settlement @1.", min_data.name))

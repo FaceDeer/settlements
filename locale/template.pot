@@ -173,13 +173,6 @@ msgstr ""
 msgid "Settlement successfully renamed from @1 to @2."
 msgstr ""
 
-#: chatcommands.lua:115
-#: chatcommands.lua:172
-msgid ""
-"Existing HUD waypoints for nearby players won't update until they go out of "
-"range and the waypoint is recreated again."
-msgstr ""
-
 #: chatcommands.lua:119
 #: chatcommands.lua:179
 msgid "No known settlements within @1m found."
