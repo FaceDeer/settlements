@@ -120,13 +120,13 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 	end,
 })
 
-minetest.register_chatcommand("settlements_regenerate_names_for_type", {
+minetest.register_chatcommand("settlements_regenerate_names", {
 	description = S("Regenerate the names for all settments of a particular type"),
 	param = S("The settlement type"),
 	privs = {["server"]=true},
 	func = function(name, param)
 		if param == "" then
-			minetest.chat_send_player(name, S("A non-empty parameter is required"))
+			minetest.chat_send_player(name, S("A non-empty settlement type parameter is required"))
 			return
 		end
 		local settlement_def = settlements.settlement_defs[param]
@@ -178,5 +178,34 @@ minetest.register_chatcommand("settlements_remove_nearest", {
 			end
 		end
 		minetest.chat_send_player(name, S("No known settlements within @1m found.", range))
+	end,
+})
+
+local half_map_chunk_size = settlements.half_map_chunk_size
+local map_chunk_size = half_map_chunk_size * 2
+
+minetest.register_chatcommand("settlements_create_in_mapchunk", {
+	description = S("Create a new settlement centered in your current mapchunk"),
+	privs = {["server"] = true},
+	func = function(name, param)
+		local player = minetest.get_player_by_name(name)
+		local player_pos = player:get_pos()
+		local minp = {}
+		-- Map chunk origin is at {x=-32,y=-32,z=-32}
+		local minp = vector.subtract(vector.multiply(vector.floor(vector.divide(vector.add(player_pos, 32), map_chunk_size)), map_chunk_size), 32)
+
+		local maxp = vector.add(minp, map_chunk_size-1)
+		local centerp = vector.add(minp, half_map_chunk_size)
+		
+		local settlement_list = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true)
+		if next(settlement_list) then
+			minetest.chat_send_player(name, S("Settlement already exists in this mapchunk"))
+			return
+		end
+		if settlements.generate_settlement(vector.subtract(minp,16), vector.add(maxp,16)) then -- add borders to simulate mapgen borders
+			minetest.chat_send_player(name, S("Created new settlement at @1", minetest.pos_to_string(centerp)))
+		else
+			minetest.chat_send_player(name, S("Unable to create new settlement at @1", minetest.pos_to_string(centerp)))
+		end
 	end,
 })

@@ -1,6 +1,6 @@
 settlements = {}
 
-settlements.half_map_chunk_size = 40
+settlements.half_map_chunk_size = tonumber(minetest.get_mapgen_setting("chunksize")) * 16 / 2
 
 settlements.surface_materials = {}
 settlements.settlement_defs = {}
@@ -15,7 +15,7 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/hud.lua")
-dofile(modpath.."/chatcommands.lua")
+dofile(modpath.."/admin_commands.lua")
 dofile(modpath.."/admin_tools.lua")
 
 settlements.register_settlement = function(settlement_type_name, settlement_def)
@@ -39,7 +39,7 @@ function settlements.convert_mts_to_lua(schem_path)
 	file:close()
 end
 
-dofile(modpath.."/default_settlements.lua")
+dofile(modpath.."/settlements_default.lua")
 
 -------------------------------------------------------------------------------
 -- check distance to other settlements

@@ -1,20 +1,21 @@
------------------------------------------------------------------------------
--- Debugging tool
+-- internationalization boilerplate
+local MP = minetest.get_modpath(minetest.get_current_modname())
+local S, NS = dofile(MP.."/intllib.lua")
 
-if not minetest.get_modpath("default") then
-	return
-end
+-----------------------------------------------------------------------------
+-- Admin tools
 
 local half_map_chunk_size = settlements.half_map_chunk_size
 
 -- manually place buildings, for debugging only
 minetest.register_craftitem("settlements:settlement_tool", {
-	description = "Settlements build tool",
-	inventory_image = "default_tool_steelshovel.png",
+	description = S("Settlements build tool"),
+	inventory_image = "settlements_settlement_marker.png",
 	-- build settlement
 	on_use = function(itemstack, placer, pointed_thing)
+		local player_name = placer:get_player_name()
 		if not minetest.check_player_privs(placer, "server") then
-			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			minetest.chat_send_player(player_name, S("You need the server privilege to use this tool."))
 			return
 		end	
 
@@ -22,7 +23,11 @@ minetest.register_craftitem("settlements:settlement_tool", {
 		if center_surface then
 			local minp = vector.subtract(center_surface, half_map_chunk_size)
 			local maxp = vector.add(center_surface, half_map_chunk_size)
-			settlements.generate_settlement(minp, maxp)
+			if settlements.generate_settlement(vector.subtract(minp,16), vector.add(maxp,16)) then -- add borders to simulate mapgen borders
+				minetest.chat_send_player(player_name, S("Created new settlement at @1", minetest.pos_to_string(center_surface)))
+			else
+				minetest.chat_send_player(player_name, S("Unable to create new settlement at @1", minetest.pos_to_string(center_surface)))
+			end
 		end
 	end,
 })
@@ -47,12 +52,12 @@ local function get_next_debug_building()
 end
 
 minetest.register_craftitem("settlements:single_building_tool", {
-	description = "Settlements single building tool",
-	inventory_image = "default_tool_woodshovel.png",
+	description = S("Settlements single building tool"),
+	inventory_image = "settlements_building_marker.png",
 	-- build single house
 	on_use = function(itemstack, placer, pointed_thing)
 		if not minetest.check_player_privs(placer, "server") then
-			minetest.chat_send_player(placer:get_player_name(), "You need the server privilege to use this tool.")
+			minetest.chat_send_player(placer:get_player_name(), S("You need the server privilege to use this tool."))
 			return
 		end	
 	
@@ -71,7 +76,7 @@ minetest.register_craftitem("settlements:single_building_tool", {
 			local emin, emax = vm:read_from_map(center_surface, maxp)
 
 			settlements.place_building(vm, built_house, {def={}})
-			minetest.chat_send_player(placer:get_player_name(), "Built " .. selected_building.name)
+			minetest.chat_send_player(placer:get_player_name(), S("Built @1", selected_building.name))
 			vm:write_to_map()
 		end
 	end,

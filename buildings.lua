@@ -550,7 +550,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settl
 	local settlement_info = create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	if not settlement_info
 	then
-		return
+		return false
 	end
 
 	-- evaluate settlement_info and prepare terrain
@@ -572,16 +572,17 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settl
 
 	-- evaluate settlement_info and initialize furnaces and chests
 	initialize_nodes(settlement_info)
+	return true
 end
 
 -- try to build a settlement outside of map generation
 settlements.generate_settlement = function(minp, maxp)
 	local vm = minetest.get_voxel_manip()
-	local emin, emax = vm:read_from_map(minp, maxp)
+	local emin, emax = vm:read_from_map(minp, maxp) -- add borders to simulate mapgen overgeneration
 	local va = VoxelArea:new{
 		MinEdge = emin,
 		MaxEdge = emax
 	}
 	
-	settlements.generate_settlement_vm(vm, va, minp, maxp)
+	return settlements.generate_settlement_vm(vm, va, minp, maxp)
 end
