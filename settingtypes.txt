@@ -19,3 +19,4 @@ settlements_underwater (Underwater coral settlements) bool false
 settlements_igloos (Igloo clusters) bool true
 settlements_jungle (Jungle treehouses) bool true
 settlements_desert (Desert settlements) bool true
+settlements_ruins (Tundra ruins) bool true
