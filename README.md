@@ -4,19 +4,19 @@ This mod adds settlements on world generation. The settlements consist of a clus
 
 With the exception of some optional commoditymarket node support, only nodes from the default minetest_game are used by the base schematics included in this mod.
 
-![Medieval Settlement](screenshot_medieval.jpg)
+![Medieval Settlement](settlements_medieval/screenshot.jpg)
 
 The most common settlement type has a medieval flavour to it, with simple houses, blacksmiths, wells, churches, and fortified towers. The material used in the walls of each building is randomized to give each settlement a bit of unique feel. If the [commoditymarket](https://github.com/FaceDeer/commoditymarket) mod is installed, then some rare houses will have a Night Market hidden inside them. There are also more prominent trading posts with King's Markets.
 
-![Desert Settlement](screenshot_desert.jpg)
+![Desert Settlement](settlements_desert/screenshot.jpg)
 
 Deserts have a unique settlement type featuring tall watchtowers and walled bazaars, which contain both Kings' Markets and Night Markets - commerce is a bit less constrained by the laws of the crown out in the shifting sand seas.
 
-![Arctic Settlement](screenshot_arctic.jpg)
+![Arctic Settlement](settlements_igloo/screenshot.jpg)
 
 Deep arctic environments contain the occasional cluster of igloos, small islands of respite in a harsh climate. They are too small and isolated to have marketplaces.
 
-![Jungle Settlement](screenshot_jungle.jpg)
+![Jungle Settlement](settlements_jungle/screenshot.jpg)
 
 Likewise, the deep jungles have platform villages hidden in the canopies of trees - hard to spot while walking through the dense foliage, best located at night when the light from their torches may be seen. These isolated tribes have no marketplaces either.
 
@@ -32,7 +32,7 @@ If there's been economic activity in the King's Market, ledgers recording some o
 
 ## API
 
-The various types of settlements are defined via an API for registering settlement type definitions. See default_settlements.lua for the various existing examples.
+The various types of settlements are defined via an API for registering settlement type definitions. See the included mods for the various existing examples.
 
 ## Credits
 
