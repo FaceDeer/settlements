@@ -1,3 +1,4 @@
+local modpath_default = minetest.get_modpath("default")
 if not (minetest.settings:get_bool("settlements_generate_books", true) and modpath_default) then
 	return
 end

@@ -4,6 +4,8 @@ local default_path_material = "default:gravel"
 local default_deep_platform = "default:stone"
 local default_shallow_platform = "default:dirt"
 
+local surface_mats = settlements.surface_materials
+
 -- function to fill empty space below baseplate when building on a hill
 local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
 	local p2 = vector.new(pos)
