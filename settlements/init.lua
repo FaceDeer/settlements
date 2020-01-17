@@ -73,20 +73,17 @@ local function evaluate_heightmap(heightmap)
 	-- only evaluate the center square of heightmap 40 x 40
 	local square_start = 1621
 	local square_end = 1661
-	for j = 1 , 40, 1 do
-		for i = square_start, square_end, 1 do
+	for j = 1, 40 do
+		for i = square_start, square_end do
 			-- skip buggy heightmaps, return high value
 			if heightmap[i] == -31000 or
-			heightmap[i] == 31000
-			then
+			heightmap[i] == 31000 then
 				return max_height_difference + 1
 			end
-			if heightmap[i] < min_y
-			then
+			if heightmap[i] < min_y then
 				min_y = heightmap[i]
 			end
-			if heightmap[i] > max_y
-			then
+			if heightmap[i] > max_y then
 				max_y = heightmap[i]
 			end
 		end
@@ -97,8 +94,7 @@ local function evaluate_heightmap(heightmap)
 	-- return the difference between highest and lowest pos in chunk
 	local height_diff = max_y - min_y
 	-- filter buggy heightmaps
-	if height_diff <= 1
-	then
+	if height_diff < 0 then
 		return max_height_difference + 1
 	end
 	return height_diff
@@ -128,16 +124,14 @@ minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlements too close to each other
 	local center_of_chunk = vector.subtract(maxp, half_map_chunk_size)
 	local dist_ok = check_distance_other_settlements(center_of_chunk)
-	if dist_ok == false
-	then
+	if dist_ok == false then
 		return
 	end
 
 	-- don't build settlements on (too) uneven terrain
 	local heightmap = minetest.get_mapgen_object("heightmap")
 	local height_difference = evaluate_heightmap(heightmap)
-	if height_difference > max_height_difference
-	then
+	if height_difference > max_height_difference then
 		return
 	end
 
