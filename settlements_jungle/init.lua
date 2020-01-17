@@ -1,10 +1,9 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local schem_path = modpath.."/schematics/"
-
 
 -- Node initialization
 local function fill_chest(pos)
@@ -55,14 +54,14 @@ local jungle_settlements = {
 
 	building_count_min = 3,
 	building_count_max = 12,
-	
+
 	altitude_min = 2,
 	altitude_max = 300,
-	
+
 	central_schematics = {
 		jungle_hut_complex,
 	},
-	
+
 	schematics = {
 		jungle_hut_complex,
 		{
@@ -74,11 +73,11 @@ local jungle_settlements = {
 			platform_clear_above = false,
 		},
 	},
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("jungle_camps")
-		end	
+		end
 		return S("Jungle settlement")
 	end,
 }

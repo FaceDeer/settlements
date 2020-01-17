@@ -1,5 +1,10 @@
 settlements = {}
 
+local modpath = minetest.get_modpath(minetest.get_current_modname())
+
+-- internationalization boilerplate
+settlements.S, settlements.NS = dofile(modpath.."/intllib.lua")
+
 settlements.half_map_chunk_size = tonumber(minetest.get_mapgen_setting("chunksize")) * 16 / 2
 
 settlements.surface_materials = {}
@@ -9,8 +14,6 @@ settlements.registered_settlements = {}
 settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
 -- maximum allowed difference in height for building a settlement
 local max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
-
-local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
@@ -46,7 +49,7 @@ end
 local function check_distance_other_settlements(center_new_chunk)
 	local min_edge = vector.subtract(center_new_chunk, settlements.min_dist_settlements)
 	local max_edge = vector.add(center_new_chunk, settlements.min_dist_settlements)
-	
+
 	-- This gets all neighbors within a cube-shaped volume
 	local neighbors = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true)
 
@@ -56,7 +59,7 @@ local function check_distance_other_settlements(center_new_chunk)
 		if distance < settlements.min_dist_settlements then
 			return false
 		end
-	end	
+	end
 	return true
 end
 
@@ -108,7 +111,7 @@ minetest.register_on_generated(function(minp, maxp)
 	if maxp.y < -100 then
 		return
 	end
-	
+
 	local existing_settlements = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true, false, true)
 	local id, data = next(existing_settlements)
 	if id ~= nil then
@@ -137,7 +140,7 @@ minetest.register_on_generated(function(minp, maxp)
 	then
 		return
 	end
-	
+
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 

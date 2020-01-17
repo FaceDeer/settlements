@@ -48,7 +48,7 @@ local function terraform(data, va, settlement_info)
 
 	for _, built_house in ipairs(settlement_info) do
 		local schematic_data = built_house.schematic_info
-		
+
 		local replace_air = schematic_data.platform_clear_above
 		local build_platform = schematic_data.platform_build_below
 		if replace_air == nil then
@@ -56,8 +56,8 @@ local function terraform(data, va, settlement_info)
 		end
 		if build_platform == nil then
 			build_platform = true
-		end	
-		
+		end
+
 		local size = schematic_data.schematic.size
 		local pos = built_house.build_pos_min
 		if built_house.rotation == "0" or built_house.rotation == "180"
@@ -100,7 +100,7 @@ local buildable_to = function(c_node)
 			buildable_to_set[minetest.get_content_id(k)] = true
 		end
 	end
-	
+
 	-- TODO: some way to discriminate between registered_settlements? For now, apply ignore_materials universally.
 	for _, def in pairs(settlements.registered_settlements) do
 		if def.ignore_surface_materials then
@@ -109,7 +109,7 @@ local buildable_to = function(c_node)
 			end
 		end
 	end
-	
+
 	return buildable_to_set[c_node]
 end
 
@@ -119,9 +119,9 @@ end
 -------------------------------------------------------------------------------
 local function find_surface(pos, data, va, altitude_min, altitude_max)
 	if not va:containsp(pos) then return nil end
-	
+
 	local y = pos.y
-	
+
 	-- starting point for looking for surface
 	local previous_vi = va:indexp(pos)
 	local previous_node = data[previous_vi]
@@ -137,7 +137,7 @@ local function find_surface(pos, data, va, altitude_min, altitude_max)
 		if (altitude_min and altitude_min > y) or (altitude_max and altitude_max < y) then
 			-- an altitude range was specified and we're outside it
 			return nil
-		end		
+		end
 		if not va:containsi(next_vi) then return nil end
 		local next_node = data[next_vi]
 		if buildable_to(previous_node) ~= buildable_to(next_node) then
@@ -192,7 +192,7 @@ local function insert_into_area(building, areastore)
 	local edge2 = vector.new(building.build_pos_max)
 	edge2 = vector.add(edge2, buffer)
 	edge2.y = 1
-	
+
 	local result = areastore:get_areas_in_area(edge1, edge2, true)
 	if next(result) then
 		return false
@@ -267,7 +267,7 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	if not center_surface_pos then
 		return nil
 	end
-	
+
 	-- get a list of all the settlement defs that can be made on this surface mat
 	local material_defs = surface_mats[surface_material]
 	local registered_settlements = {}
@@ -282,16 +282,16 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	if #registered_settlements == 0 then
 		return nil
 	end
-	
+
 	 -- pick one at random
 	local settlement_def = registered_settlements[math.random(1, #registered_settlements)]
-	
+
 	-- Get a name for the settlement.
 	local name = existing_settlement_name or settlement_def.generate_name(center)
-	
+
 	local min_number = settlement_def.building_count_min or 5
 	local max_number = settlement_def.building_count_max or 25
-	
+
 	local settlement_info = {}
 	settlement_info.def = settlement_def
 	settlement_info.name = name
@@ -300,16 +300,16 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	local areastore = AreaStore() -- An efficient structure for storing building footprints and testing for overlaps
 	settlement_info.areastore = areastore
 	areastore:reserve(number_of_buildings)
-	
+
 	settlement_info.replacements = select_replacements(settlement_def.replacements)
 	settlement_info.replacements_optional = select_replacements(settlement_def.replacements_optional)
 
 	-- debugging variable
 	local count_buildings = {}
-	
+
 	-- first building is selected from the central_schematics list, or randomly from schematics if that isn't defined.
 	local central_list = settlement_def.central_schematics or settlement_def.schematics
-	
+
 	local townhall = central_list[math.random(#central_list)]
 	local rotation = possible_rotations[math.random(#possible_rotations)]
 	-- add to settlement info table
@@ -324,9 +324,9 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 		surface_mat = surface_material,
 	}
 	settlement_info[number_built] = center_building
-	
+
 	insert_into_area(center_building, areastore)
-		
+
 	-- debugging variable
 	--building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
@@ -524,12 +524,12 @@ function settlements.place_building(vm, built_house, settlement_info)
 	if settlement_info.def.replace_with_surface_material then
 		replacements[settlement_info.def.replace_with_surface_material] = platform_material_name
 	end
-	
+
 	local force_place = building_all_info.force_place
 	if force_place == nil then
 		force_place = true
 	end
-	
+
 	minetest.place_schematic_on_vmanip(
 		vm,
 		pos,
@@ -542,7 +542,7 @@ end
 local data = {} -- for better memory management, use externally-allocated buffer
 settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settlement_name)
 	vm:get_data(data)
-	
+
 	local settlement_info = create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	if not settlement_info
 	then
@@ -579,6 +579,6 @@ settlements.generate_settlement = function(minp, maxp)
 		MinEdge = emin,
 		MaxEdge = emax
 	}
-	
+
 	return settlements.generate_settlement_vm(vm, va, minp, maxp)
 end

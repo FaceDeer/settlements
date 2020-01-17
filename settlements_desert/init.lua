@@ -1,7 +1,7 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 -- Node initialization
 local function fill_chest(pos)
@@ -85,20 +85,20 @@ local desert_settlements = {
 	platform_shallow = "default:desert_sand",
 	platform_deep = "default:stone",
 	path_material = "default:desert_sandstone",
-	
+
 	replace_with_surface_material = "default:dirt_with_grass",
 
 	building_count_min = 3,
 	building_count_max = 20,
-	
+
 	altitude_min = 2,
 	altitude_max = 300,
-	
+
 	central_schematics = {
 		bazaar,
 		desert_hut,
 	},
-	
+
 	schematics = {
 		desert_hut,
 		bazaar,
@@ -109,17 +109,16 @@ local desert_settlements = {
 			max_num = 0.15,
 		},
 	},
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("desert_settlement")
-		end	
+		end
 		return S("Desert settlement")
 	end,
-	
+
 	generate_book = generate_book,
 }
-
 
 if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_desert.cfg"))
