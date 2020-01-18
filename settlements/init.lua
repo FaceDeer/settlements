@@ -1,5 +1,10 @@
 settlements = {}
 
+local modpath = minetest.get_modpath(minetest.get_current_modname())
+
+-- internationalization boilerplate
+settlements.S, settlements.NS = dofile(modpath.."/intllib.lua")
+
 settlements.half_map_chunk_size = tonumber(minetest.get_mapgen_setting("chunksize")) * 16 / 2
 
 settlements.surface_materials = {}
@@ -9,8 +14,6 @@ settlements.registered_settlements = {}
 settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_minimum_distance_between_settlements")) or 500
 -- maximum allowed difference in height for building a settlement
 local max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
-
-local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
@@ -46,7 +49,7 @@ end
 local function check_distance_other_settlements(center_new_chunk)
 	local min_edge = vector.subtract(center_new_chunk, settlements.min_dist_settlements)
 	local max_edge = vector.add(center_new_chunk, settlements.min_dist_settlements)
-	
+
 	-- This gets all neighbors within a cube-shaped volume
 	local neighbors = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true)
 
@@ -56,7 +59,7 @@ local function check_distance_other_settlements(center_new_chunk)
 		if distance < settlements.min_dist_settlements then
 			return false
 		end
-	end	
+	end
 	return true
 end
 
@@ -70,20 +73,17 @@ local function evaluate_heightmap(heightmap)
 	-- only evaluate the center square of heightmap 40 x 40
 	local square_start = 1621
 	local square_end = 1661
-	for j = 1 , 40, 1 do
-		for i = square_start, square_end, 1 do
+	for j = 1, 40 do
+		for i = square_start, square_end do
 			-- skip buggy heightmaps, return high value
 			if heightmap[i] == -31000 or
-			heightmap[i] == 31000
-			then
+			heightmap[i] == 31000 then
 				return max_height_difference + 1
 			end
-			if heightmap[i] < min_y
-			then
+			if heightmap[i] < min_y then
 				min_y = heightmap[i]
 			end
-			if heightmap[i] > max_y
-			then
+			if heightmap[i] > max_y then
 				max_y = heightmap[i]
 			end
 		end
@@ -94,8 +94,7 @@ local function evaluate_heightmap(heightmap)
 	-- return the difference between highest and lowest pos in chunk
 	local height_diff = max_y - min_y
 	-- filter buggy heightmaps
-	if height_diff <= 1
-	then
+	if height_diff < 0 then
 		return max_height_difference + 1
 	end
 	return height_diff
@@ -108,7 +107,7 @@ minetest.register_on_generated(function(minp, maxp)
 	if maxp.y < -100 then
 		return
 	end
-	
+
 	local existing_settlements = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true, false, true)
 	local id, data = next(existing_settlements)
 	if id ~= nil then
@@ -125,19 +124,17 @@ minetest.register_on_generated(function(minp, maxp)
 	-- don't build settlements too close to each other
 	local center_of_chunk = vector.subtract(maxp, half_map_chunk_size)
 	local dist_ok = check_distance_other_settlements(center_of_chunk)
-	if dist_ok == false
-	then
+	if dist_ok == false then
 		return
 	end
 
 	-- don't build settlements on (too) uneven terrain
 	local heightmap = minetest.get_mapgen_object("heightmap")
 	local height_difference = evaluate_heightmap(heightmap)
-	if height_difference > max_height_difference
-	then
+	if height_difference > max_height_difference then
 		return
 	end
-	
+
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 

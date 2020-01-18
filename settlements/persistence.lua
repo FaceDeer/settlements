@@ -1,14 +1,10 @@
 local worldpath = minetest.get_worldpath()
 local areastore_filename = worldpath.."/settlements_areastore.txt"
 
--- internationalization boilerplate
-local modpath = minetest.get_modpath(minetest.get_current_modname())
-local S, NS = dofile(modpath.."/intllib.lua")
-
 -- load list of generated settlements
 local function settlements_load()
 	local area_file = io.open(areastore_filename, "r")
-	
+
 	-- Compatibility with old versions
 	local old_file = io.open(worldpath.."/settlements.txt", "r")
 	if old_file and not area_file then

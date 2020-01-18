@@ -1,6 +1,5 @@
 -- internationalization boilerplate
-local MP = minetest.get_modpath(minetest.get_current_modname())
-local S, NS = dofile(MP.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 -----------------------------------------------------------------------------
 -- Admin tools
@@ -17,7 +16,7 @@ minetest.register_craftitem("settlements:settlement_tool", {
 		if not minetest.check_player_privs(placer, "server") then
 			minetest.chat_send_player(player_name, S("You need the server privilege to use this tool."))
 			return
-		end	
+		end
 
 		local center_surface = pointed_thing.under
 		if center_surface then
@@ -59,8 +58,8 @@ minetest.register_craftitem("settlements:single_building_tool", {
 		if not minetest.check_player_privs(placer, "server") then
 			minetest.chat_send_player(placer:get_player_name(), S("You need the server privilege to use this tool."))
 			return
-		end	
-	
+		end
+
 		local center_surface = pointed_thing.under
 		if center_surface then
 			local selected_building = get_next_debug_building()
@@ -70,7 +69,7 @@ minetest.register_craftitem("settlements:single_building_tool", {
 			built_house.build_pos_min = center_surface
 			built_house.rotation = "0"
 			built_house.surface_mat = c_dirt_with_grass
-			
+
 			local vm = minetest.get_voxel_manip()
 			local maxp = vector.add(center_surface, selected_building.schematic.size)
 			local emin, emax = vm:read_from_map(center_surface, maxp)

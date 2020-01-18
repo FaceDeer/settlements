@@ -1,7 +1,7 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local schem_path = modpath.."/schematics/"
 
@@ -14,13 +14,13 @@ local ruin_settlements = {
 
 	platform_shallow = "default:gravel",
 	platform_deep = "default:stone",
-	
+
 	building_count_min = 3,
 	building_count_max = 15,
 
 	altitude_min = 2,
 	altitude_max = 300,
-	
+
 	schematics = {
 		{
 			name = "ruin_small",
@@ -51,11 +51,11 @@ local ruin_settlements = {
 			platform_clear_above = false,
 		},
 	},
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("ruin_settlement")
-		end	
+		end
 		return S("Ruins")
 	end,
 }
