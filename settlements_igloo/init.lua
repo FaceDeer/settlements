@@ -1,7 +1,7 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local schem_path = modpath.."/schematics/"
 
@@ -41,13 +41,13 @@ local inuit_settlements = {
 
 	platform_shallow = "default:snowblock",
 	platform_deep = "default:ice",
-	
+
 	building_count_min = 3,
 	building_count_max = 9,
-	
+
 	altitude_min = 2,
 	altitude_max = 300,
-	
+
 	schematics = {
 		{
 			name = "igloo",
@@ -57,11 +57,11 @@ local inuit_settlements = {
 			initialize_node = initialize_node,
 		},
 	},
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("inuit_camps")
-		end	
+		end
 		return S("Inuit camp")
 	end,
 }

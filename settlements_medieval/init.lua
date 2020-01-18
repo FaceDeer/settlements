@@ -1,6 +1,7 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
+
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local schem_path = modpath.."/schematics/"
 
@@ -187,31 +188,31 @@ local medieval_settlements = {
 	-- TODO: add a biome list. The tricky part here is, what if a biome list but not a surface materials list is provided?
 	-- How to find the surface, and how to know what to replace surface material nodes with in the schematic?
 
-	-- nodes in  all schematics will be replaced with these nodes, or a randomly-selected node
+	-- nodes in all schematics will be replaced with these nodes, or a randomly-selected node
 	-- from a list of choices if a list is provided
 	replacements = {
 		["default:junglewood"] = "settlements:junglewood",
 	},
-	
+
 	-- Affected by per-building replace_nodes flag
 	replacements_optional = {
 		["default:cobble"] = {
-			"default:junglewood", 
-			"default:pine_wood", 
-			"default:wood", 
-			"default:aspen_wood", 
-			"default:acacia_wood",	 
-			"default:stonebrick", 
-			"default:cobble", 
-			"default:desert_stonebrick", 
-			"default:desert_cobble", 
+			"default:junglewood",
+			"default:pine_wood",
+			"default:wood",
+			"default:aspen_wood",
+			"default:acacia_wood",
+			"default:stonebrick",
+			"default:cobble",
+			"default:desert_stonebrick",
+			"default:desert_cobble",
 			"default:sandstone",
 		},
 	},
-	
+
 	-- This node will be replaced with the surface material of the location the building is placed on.
 	replace_with_surface_material = "default:dirt_with_grass",
-	
+
 	-- Trees often interfere with surface detection. These nodes will be ignored when detecting surface level.
 	ignore_surface_materials = {
 		"default:tree",
@@ -228,32 +229,32 @@ local medieval_settlements = {
 		"default:blueberry_bush_leaves_with_berries",
 		"default:blueberry_bush_leaves",
 	},
-	
+
 	platform_shallow = "default:dirt",
 	platform_deep = "default:stone",
 	path_material = "default:gravel",
-	
+
 	schematics = schematic_table,
-	
+
 	-- Select one of these to form the center of town. If not defined, one will be picked from the regular schematic table
 	central_schematics = {
 		townhall_schematic,
 		kingsmarket_schematic,
 	},
-	
+
 	building_count_min = 5,
 	building_count_max = 25,
-	
+
 	altitude_min = 2,
 	altitude_max = 300,
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("settlement_towns")
 		end
 		return S("Town")
 	end,
-	
+
 	generate_book = generate_book,
 	
 	-- This is a special-purpose property used for cleaning up leaf blobs that might have been left behind

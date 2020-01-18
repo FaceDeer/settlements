@@ -1,6 +1,5 @@
 -- internationalization boilerplate
-local modpath = minetest.get_modpath(minetest.get_current_modname())
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 600
 
@@ -10,10 +9,10 @@ minetest.register_chatcommand("settlements_list", {
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		local player_pos = player:get_pos()
-		
+
 		local settlement_list = settlements.settlements_in_world:get_areas_in_area(
 			{x=-32000, y=-32000, z=-32000}, {x=32000, y=32000, z=32000}, true, true, true)
-		
+
 		for _, settlement in pairs(settlement_list) do
 			local data = minetest.deserialize(settlement.data)
 			if data.discovered_by[name] then
@@ -67,7 +66,7 @@ local function get_nearest_settlement_within_range(pos, range, name)
 	local min_edge = vector.subtract(pos, range)
 	local max_edge = vector.add(pos, range)
 	local settlement_list = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true, true)
-	
+
 	local min_dist = range + 1 -- start with number beyond range
 	local min_id = nil
 	local min_data = nil
@@ -77,12 +76,12 @@ local function get_nearest_settlement_within_range(pos, range, name)
 		local distance = vector.distance(pos, settlement.min)
 		if distance < min_dist and data.discovered_by[name] then
 			min_dist = distance
-			min_id = id	
+			min_id = id
 			min_data = data
 			min_pos = settlement.min
 		end
 	end
-	
+
 	return min_pos, min_id, min_data
 end
 
@@ -93,9 +92,9 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		local player_pos = player:get_pos()
-		
+
 		local min_pos, min_id, min_data = get_nearest_settlement_within_range(player_pos, visual_range, name)
-		
+
 		if min_id ~= nil then
 			if param == "" then
 				local def = settlements.registered_settlements[min_data.settlement_type]
@@ -115,7 +114,7 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 			settlements.remove_all_hud_markers()
 			return
 		end
-		
+
 		minetest.chat_send_player(name, S("No known settlements within @1m found.", visual_range))
 	end,
 })
@@ -163,7 +162,7 @@ minetest.register_chatcommand("settlements_remove_nearest", {
 		local player = minetest.get_player_by_name(name)
 		local player_pos = player:get_pos()
 		local min_pos, min_id, min_data = get_nearest_settlement_within_range(player_pos, range, name)
-		
+
 		if min_id ~= nil then
 			local result = settlements.settlements_in_world:remove_area(min_id)
 			if result then
@@ -196,7 +195,7 @@ minetest.register_chatcommand("settlements_create_in_mapchunk", {
 
 		local maxp = vector.add(minp, map_chunk_size-1)
 		local centerp = vector.add(minp, half_map_chunk_size)
-		
+
 		local settlement_list = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true)
 		if next(settlement_list) then
 			minetest.chat_send_player(name, S("Settlement already exists in this mapchunk"))

@@ -3,7 +3,7 @@
 -- Code released under Unlicense <http://unlicense.org>.
 
 -- Get the latest version of this file at:
---   https://raw.githubusercontent.com/minetest-mods/intllib/master/lib/intllib.lua
+-- https://raw.githubusercontent.com/minetest-mods/intllib/master/lib/intllib.lua
 
 local function format(str, ...)
 	local args = { ... }

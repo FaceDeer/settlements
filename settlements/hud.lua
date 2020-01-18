@@ -4,8 +4,7 @@ if not minetest.settings:get_bool("settlements_show_in_hud", true) then
 end
 
 -- internationalization boilerplate
-local modpath = minetest.get_modpath(minetest.get_current_modname())
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local requires_mappingkit = minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
 	and minetest.registered_items["map:mapping_kit"] -- rather than test for the map modpath, test whether the mapping_kit has been registered.
@@ -23,7 +22,7 @@ local add_hud_marker = function(player, player_name, pos, label)
 	local pos_hash = minetest.hash_node_position(pos)
 	if waypoints[pos_hash] then
 		return
-	end	
+	end
 	local hud_id = player:hud_add({
 		hud_elem_type = "waypoint",
 		name = label,
@@ -83,38 +82,38 @@ minetest.register_globalstep(function(dtime)
 		return
 	end
 	elapsed = 0
-	
+
 	local connected_players = minetest.get_connected_players()
 	local new_discovery = false
 	for _, player in ipairs(connected_players) do
 		local player_pos = player:get_pos()
 		local player_name = player:get_player_name()
-		
+
 		local min_visual_edge = vector.subtract(player_pos, visual_range)
 		local max_visual_edge = vector.add(player_pos, visual_range)
-		local visual_settlements = settlements.settlements_in_world:get_areas_in_area(min_visual_edge, max_visual_edge, true, true, true)		
+		local visual_settlements = settlements.settlements_in_world:get_areas_in_area(min_visual_edge, max_visual_edge, true, true, true)
 		for id, settlement in pairs(visual_settlements) do
-		
+
 			local data = minetest.deserialize(settlement.data)
 			local distance = vector.distance(player_pos, settlement.min)
 			local discovered_by = data.discovered_by
 			local settlement_pos = vector.add(settlement.min, {x=0, y=2, z=0})
-	
+
 			if distance < discovery_range and not discovered_by[player_name] then
 				-- Update areastore
 				data.discovered_by[player_name] = true
 				settlements.settlements_in_world:remove_area(id)
 				settlements.settlements_in_world:insert_area(settlement.min, settlement.min, minetest.serialize(data), id)
-				
+
 				-- Mark that we'll need to save settlements
 				new_discovery = true
-				
+
 				-- Notify player of their find
 				local note_name = data.name or "a settlement"
 				local discovery_note = S("You've discovered @1!", note_name)
 				local formspec = "size[4,1]" ..
 					"label[1.0,0.0;" .. minetest.formspec_escape(discovery_note) ..
-					"]button_exit[0.5,0.75;3,0.5;btn_ok;".. S("OK") .."]"				
+					"]button_exit[0.5,0.75;3,0.5;btn_ok;".. S("OK") .."]"
 				minetest.show_formspec(player_name, "settlements:discovery_popup",
 					formspec)
 				minetest.chat_send_player(player_name, discovery_note)

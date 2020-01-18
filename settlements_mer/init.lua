@@ -1,7 +1,7 @@
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 -- internationalization boilerplate
-local S, NS = dofile(modpath.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 local schem_path = modpath.."/schematics/"
 
@@ -23,24 +23,24 @@ local mer_settlements = {
 	platform_shallow = "default:sand",
 	platform_deep = "default:stone",
 	platform_air = "default:water_source",
-	
+
 	building_count_min = 3,
 	building_count_max = 12,
-	
+
 	altitude_min = -50,
 	altitude_max = -10,
-	
+
 	replacements = {
 		["default:coral_orange"] = {
 			"default:coral_orange",
-			"default:coral_brown", 
+			"default:coral_brown",
 		},
 	},
-	
+
 	central_schematics = {
 		coralpalace,
 	},
-	
+
 	schematics = {
 		coralpalace,
 		{
@@ -51,11 +51,11 @@ local mer_settlements = {
 			platform_clear_above = false,
 		},
 	},
-	
+
 	generate_name = function(pos)
 		if minetest.get_modpath("namegen") then
 			return namegen.generate("mer_settlements")
-		end	
+		end
 		return S("Mer camp")
 	end,
 }
@@ -64,4 +64,3 @@ if minetest.get_modpath("namegen") then
 	namegen.parse_lines(io.lines(modpath.."/namegen_mer.cfg"))
 end
 settlements.register_settlement("mer", mer_settlements)
-

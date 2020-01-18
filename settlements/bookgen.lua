@@ -4,8 +4,7 @@ if not (minetest.settings:get_bool("settlements_generate_books", true) and modpa
 end
 
 -- internationalization boilerplate
-local MP = minetest.get_modpath(minetest.get_current_modname())
-local S, NS = dofile(MP.."/intllib.lua")
+local S, NS = settlements.S, settlements.NS
 
 -- values taken from default's craftitems.lua
 local max_text_size = 10000
@@ -16,7 +15,7 @@ local lpp = 14
 local generate_book = function(title, owner, text)
 	local book = ItemStack("default:book_written")
 	local meta = book:get_meta()
-	
+
 	meta:set_string("title", title:sub(1, max_title_size))
 	meta:set_string("owner", owner)
 	local short_title = title
@@ -30,7 +29,7 @@ local generate_book = function(title, owner, text)
 	meta:set_string("text", text)
 	meta:set_int("page", 1)
 	meta:set_int("page_max", math.ceil((#text:gsub("[^\n]", "") + 1) / lpp))
-	
+
 	return book
 end
 
@@ -39,26 +38,26 @@ end
 local half_map_chunk_size = settlements.half_map_chunk_size
 
 minetest.register_abm({
-    label = "Settlement book authoring",
-    nodenames = {"default:bookshelf"},
-    interval = 86400, -- daily
-    -- Operation interval in seconds
-    chance = 2,
-    -- Chance of triggering `action` per-node per-interval is 1.0 / this value
-    catch_up = true,
-    -- If true, catch-up behaviour is enabled: The `chance` value is
-    -- temporarily reduced when returning to an area to simulate time lost
-    -- by the area being unattended. Note that the `chance` value can often
-    -- be reduced to 1.
+	label = "Settlement book authoring",
+	nodenames = {"default:bookshelf"},
+	interval = 86400, -- daily
+	-- Operation interval in seconds
+	chance = 2,
+	-- Chance of triggering `action` per-node per-interval is 1.0 / this value
+	catch_up = true,
+	-- If true, catch-up behaviour is enabled: The `chance` value is
+	-- temporarily reduced when returning to an area to simulate time lost
+	-- by the area being unattended. Note that the `chance` value can often
+	-- be reduced to 1.
 
-    action = function(pos, node, active_object_count, active_object_count_wider)
+	action = function(pos, node, active_object_count, active_object_count_wider)
 		local inv = minetest.get_inventory( {type="node", pos=pos} )
-		
+
 		-- Can we fit a book?
 		if not inv or not inv:room_for_item("books", "default:book_written") then
 			return
 		end
-		
+
 		-- find any settlements within the shelf's mapchunk
 		-- There's probably only ever going to be one, but might as well do a closeness check to be on the safe side.
 		local min_edge = vector.subtract(pos, half_map_chunk_size)
@@ -71,11 +70,11 @@ minetest.register_abm({
 				closest_settlement = {pos = target_pos, data = settlement.data}
 			end
 		end
-		
+
 		if not closest_settlement then
 			return
 		end
-		
+
 		-- Get the settlement def and, if it generate books, generate one
 		local data = minetest.deserialize(closest_settlement.data)
 		local town_name = data.name
@@ -113,7 +112,7 @@ local log_to_string = function(log_entry, market)
 	else
 		seller_name = seller.name
 	end
-	
+
 	local itemname = log_entry.item
 	local item_def = minetest.registered_items[log_entry.item]
 	if item_def then
@@ -189,18 +188,18 @@ local get_random_settlement_within_range = function(pos, range_max, range_min)
 	if #settlements_within_range == 0 then
 		return
 	end
-	
+
 	local target = settlements_within_range[math.random(#settlements_within_range)]
 	target.data = minetest.deserialize(target.data)
 	return target
 end
 
 local compass_dirs = {
-	[0] = S("west"), 
+	[0] = S("west"),
 	S("west-southwest"),
 	S("southwest"),
 	S("south-southwest"),
-    S("south"),
+	S("south"),
 	S("south-southeast"),
 	S("southeast"),
 	S("east-southeast"),
@@ -208,11 +207,11 @@ local compass_dirs = {
 	S("east-northeast"),
 	S("northeast"),
 	S("north-northeast"),
-    S("north"),
+	S("north"),
 	S("north-northwest"),
 	S("northwest"),
 	S("west-northwest"),
-	S("west"), 
+	S("west"),
 }
 local increment = 2*math.pi/#compass_dirs -- Divide the circle up into pieces
 local reframe = math.pi - increment/2 -- Adjust the angle to run through a range divisible into indexes
@@ -221,7 +220,7 @@ local compass_direction = function(p1, p2)
 	local angle = math.atan2(dir.z, dir.x);
 	angle = angle + reframe
 	angle = math.ceil(angle / increment)
-	return compass_dirs[angle]	
+	return compass_dirs[angle]
 end
 
 local get_altitude = function(pos)
@@ -252,7 +251,7 @@ settlements.generate_travel_guide = function(source_pos, source_name)
 	local distance = vector.distance(source_pos, target.pos)
 	local kilometers = string.format("%.1f", distance/1000)
 	local altitude = get_altitude(target.pos)
-	
+
 	local text = S("In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5.", altitude, kilometers, dir, source_name, target_name)
 	return generate_book(title, author, text)
 end
