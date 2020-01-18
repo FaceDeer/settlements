@@ -10,6 +10,8 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 minetest.register_craftitem("settlements:settlement_tool", {
 	description = S("Settlements build tool"),
 	inventory_image = "settlements_settlement_marker.png",
+	stack_max = 1,
+	
 	-- build settlement
 	on_use = function(itemstack, placer, pointed_thing)
 		local player_name = placer:get_player_name()
@@ -31,10 +33,9 @@ minetest.register_craftitem("settlements:settlement_tool", {
 	end,
 })
 
-local debug_building_index = 0
 local c_dirt_with_grass	= minetest.get_content_id("default:dirt_with_grass")
 local all_schematics
-local function get_next_debug_building()
+local function get_all_schematics()
 	if not all_schematics then
 		all_schematics = {}
 		for _, settlement_def in pairs(settlements.registered_settlements) do
@@ -43,26 +44,47 @@ local function get_next_debug_building()
 			end
 		end
 	end
-	debug_building_index = debug_building_index + 1
-	if debug_building_index > #all_schematics then
-		debug_building_index = 1
-	end
-	return all_schematics[debug_building_index]
+	return all_schematics
 end
 
 minetest.register_craftitem("settlements:single_building_tool", {
-	description = S("Settlements single building tool"),
+	description = S("Settlements tool for building: @1", S("Unset")),
 	inventory_image = "settlements_building_marker.png",
+	stack_max = 1,
+	
+	on_place = function(itemstack, placer, pointed_thing)
+		local meta = itemstack:get_meta()
+		local index = meta:get_int("index")
+		local all_schematics = get_all_schematics()
+		
+		index = index + 1
+		if index > #all_schematics then
+			index = 1
+		end
+
+		meta:set_int("index", index)
+		local desc_string = S("Settlements tool for building: @1", all_schematics[index].name)
+		meta:set_string("description", desc_string)
+		minetest.chat_send_player(placer:get_player_name(), desc_string)
+		return itemstack
+	end,
+	
 	-- build single house
 	on_use = function(itemstack, placer, pointed_thing)
 		if not minetest.check_player_privs(placer, "server") then
 			minetest.chat_send_player(placer:get_player_name(), S("You need the server privilege to use this tool."))
 			return
 		end
+		
+		local meta = itemstack:get_meta()
+		local index = meta:get_int("index")
+		local selected_building = get_all_schematics()[index]
+		if not selected_building then
+			return
+		end
 
 		local center_surface = pointed_thing.under
 		if center_surface then
-			local selected_building = get_next_debug_building()
 			local built_house = {}
 			built_house.schematic_info = selected_building
 			built_house.center_pos = center_surface -- we're not terraforming so this doesn't matter
