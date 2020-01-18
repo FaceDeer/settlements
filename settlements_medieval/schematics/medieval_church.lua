@@ -23,6 +23,12 @@ local n22 = { name = "stairs:stair_obsidian" }
 local n23 = { name = "default:torch_wall", param2 = 4 }
 local n24 = { name = "stairs:stair_outer_wood", param2 = 2 }
 local n25 = { name = "stairs:stair_outer_wood", param2 = 3 }
+local n26 = { name = "air" }
+
+if minetest.get_modpath("bell") and minetest.registered_nodes["bell:bell"] then
+	n26 = { name = "bell:bell" }
+end
+
 
 return {
 	yslice_prob = {
@@ -222,7 +228,7 @@ return {
 		-- z=6, y=10
 		n4, n9, n2, n2, n2, n9, n5, 
 		-- z=6, y=11
-		n2, n4, n2, n2, n2, n5, n2, 
+		n2, n4, n2, n26, n2, n5, n2, 
 		-- z=6, y=12
 		n2, n2, n18, n18, n18, n2, n2, 
 
