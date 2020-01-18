@@ -37,6 +37,22 @@ local function get_corner_pos(center_pos, schematic, rotation)
 	return corner1, corner2
 end
 
+local group_ids = {}
+local is_in_group = function(c_id, groupname)
+	local grouplist = group_ids[groupname]
+	if grouplist then
+		return grouplist[c_id]
+	end
+	grouplist = {}
+	for name, def in pairs(minetest.registered_nodes) do
+		if minetest.get_item_group(name, groupname) > 0 then
+			grouplist[minetest.get_content_id(name)] = true
+		end
+	end
+	group_ids[groupname] = grouplist
+	return grouplist[c_id]
+end
+
 -- function clear space above baseplate
 local function terraform(data, va, settlement_info)
 	local c_air = minetest.get_content_id(settlement_info.def.platform_air or "air")
@@ -56,6 +72,11 @@ local function terraform(data, va, settlement_info)
 		end
 		if build_platform == nil then
 			build_platform = true
+		end
+
+		local skip_group_above = schematic_data.platform_ignore_group_above
+		if skip_group_above then
+			skip_group_above = skip_group_above:gsub("^group:", "")
 		end
 
 		local size = schematic_data.schematic.size
@@ -82,8 +103,11 @@ local function terraform(data, va, settlement_info)
 						local p = {x=pos.x+xi, y=pos.y, z=pos.z+zi}
 						ground(p, data, va, c_shallow, c_deep)
 					elseif replace_air then
-						local vi = va:index(pos.x+xi, pos.y+yi, pos.z+zi)
-						data[vi] = c_air
+						local p = vector.new(pos.x+xi, pos.y+yi, pos.z+zi)
+						local vi = va:indexp(p)
+						if not (skip_group_above and is_in_group(data[vi], skip_group_above)) then
+							data[vi] = c_air
+						end
 					end
 				end
 			end
@@ -539,6 +563,16 @@ function settlements.place_building(vm, built_house, settlement_info)
 		force_place)
 end
 
+local trigger_timer_for_group = function(minp, maxp, nodenames)
+	if not nodenames then
+		return
+	end
+	local targets = minetest.find_nodes_in_area(minp, maxp, nodenames)
+	for _, pos in ipairs(targets) do
+		minetest.get_node_timer(pos):start(math.random(20, 120) / 10)
+	end
+end
+
 local data = {} -- for better memory management, use externally-allocated buffer
 settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settlement_name)
 	vm:get_data(data)
@@ -568,6 +602,7 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settl
 
 	-- evaluate settlement_info and initialize furnaces and chests
 	initialize_nodes(settlement_info)
+	trigger_timer_for_group(minp, maxp, settlement_info.def.trigger_timers_for_nodes)
 	return true
 end
 

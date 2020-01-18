@@ -90,6 +90,10 @@ local townhall_schematic = {
 					-- So for example, 0.1 means at most 1 of these buildings in a 10-building settlement and 2 in a 20-building settlement.
 	replace_nodes_optional = true, -- If true, default:cobble will be replaced with a random wall material
 	initialize_node = initialize_node, -- allows additional post-creation actions to be executed on schematic nodes once they're constructed
+	platform_ignore_group_above = "group:leafdecay", -- causes special handling of nodes belonging to this group. If 
+		-- the node is in the space above the schematic being placed it will not be turned into air.
+		-- For leaves, make sure to add trigger_timers_for_nodes = "group:leafdecay" to the settlement settings to clean
+		-- up blobs of leaves that might be left over from trunks that have been removed.
 }
 local kingsmarket_schematic = {
 	name = "kingsmarket",
@@ -98,6 +102,7 @@ local kingsmarket_schematic = {
 	max_num = 0.1,
 	replace_nodes_optional = true,
 	initialize_node = initialize_node,
+	platform_ignore_group_above = "group:leafdecay",
 }
 
 -- list of schematics
@@ -108,6 +113,7 @@ local schematic_table = {
 		buffer = 2,
 		max_num = 0.045,
 		height_adjust = -2, -- adjusts the y axis of where the schematic is built, to allow for "basement" stuff
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "hut",
@@ -116,36 +122,42 @@ local schematic_table = {
 		max_num = 0.9,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "garden",
 		schematic = dofile(schem_path.."medieval_garden.lua"),
 		max_num = 0.1,
 		initialize_node = initialize_node,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "lamp",
 		schematic = dofile(schem_path.."medieval_lamp.lua"),
 		buffer = 3,
 		max_num = 0.05,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "tower",
 		schematic = dofile(schem_path.."medieval_tower.lua"),
 		buffer = 3,
 		max_num = 0.055,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "church",
 		schematic = dofile(schem_path.."medieval_church.lua"),
 		buffer = 2,
 		max_num = 0.075,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	{
 		name = "blacksmith",
 		schematic = dofile(schem_path.."medieval_blacksmith.lua"),
 		buffer = 2,
 		max_num = 0.050,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 	kingsmarket_schematic,
 	{
@@ -155,6 +167,7 @@ local schematic_table = {
 		max_num = 0.025,
 		replace_nodes_optional = true,
 		initialize_node = initialize_node,
+		platform_ignore_group_above = "group:leafdecay",
 	},
 }
 
@@ -243,6 +256,11 @@ local medieval_settlements = {
 	end,
 
 	generate_book = generate_book,
+	
+	-- This is a special-purpose property used for cleaning up leaf blobs that might have been left behind
+	-- when tree trunks got removed by buildings. It goes through every node in the mapchunk and sets the
+	-- node's timer going if it matches (using find_nodes_in_area).
+	trigger_timers_for_nodes = "group:leafdecay",
 }
 
 settlements.register_settlement("medieval", medieval_settlements)
