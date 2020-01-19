@@ -23,8 +23,8 @@ local n22 = { name = "default:chest", param2 = 1 }
 local n23 = { name = "default:tree", param2 = 1 }
 local n24 = { name = "xpanes:pane_flat" }
 
-if minetest.get_modpath("commoditymarket") and minetest.registered_items["commoditymarket:night_market"] then
-	n13 = { name = "commoditymarket:night_market" }
+if minetest.get_modpath("commoditymarket_fantasy") and minetest.registered_items["commoditymarket_fantasy:night_market"] then
+	n13 = { name = "commoditymarket_fantasy:night_market" }
 end
 
 return {
