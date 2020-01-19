@@ -191,7 +191,7 @@ local medieval_settlements = {
 	-- nodes in all schematics will be replaced with these nodes, or a randomly-selected node
 	-- from a list of choices if a list is provided
 	replacements = {
-		["default:junglewood"] = "settlements:junglewood",
+		["default:junglewood"] = "settlements_medieval:junglewood",
 	},
 
 	-- Affected by per-building replace_nodes flag
@@ -281,6 +281,7 @@ end
 minetest.register_alias("settlements:junglewood", "settlements_medieval:junglewood")
 
 local junglewood_def = deep_copy(minetest.registered_nodes["default:junglewood"])
+junglewood_def.drop = "default:junglewood"
 minetest.register_node("settlements_medieval:junglewood", junglewood_def)
 -- register inhabitants
 if minetest.get_modpath("mobs_npc") ~= nil then
