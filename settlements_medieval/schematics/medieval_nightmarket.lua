@@ -1,7 +1,7 @@
 local n1 = { name = "default:dirt_with_grass" }
 local n2 = { name = "air" }
 local n3 = { name = "stairs:stair_wood" }
-local n4 = { name = "settlements:junglewood" }
+local n4 = { name = "default:junglewood" }
 local n5 = { name = "default:tree", param2 = 2 }
 local n6 = { name = "default:cobble" }
 local n7 = { name = "doors:door_wood_a", param2 = 2 }
