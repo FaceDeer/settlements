@@ -191,7 +191,7 @@ local medieval_settlements = {
 	-- nodes in all schematics will be replaced with these nodes, or a randomly-selected node
 	-- from a list of choices if a list is provided
 	replacements = {
-		["default:junglewood"] = "settlements:junglewood",
+		["default:junglewood"] = "settlements_medieval:junglewood",
 	},
 
 	-- Affected by per-building replace_nodes flag
