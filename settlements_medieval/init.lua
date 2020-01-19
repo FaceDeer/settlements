@@ -281,6 +281,7 @@ end
 minetest.register_alias("settlements:junglewood", "settlements_medieval:junglewood")
 
 local junglewood_def = deep_copy(minetest.registered_nodes["default:junglewood"])
+junglewood_def.drop = "default:junglewood"
 minetest.register_node("settlements_medieval:junglewood", junglewood_def)
 -- register inhabitants
 if minetest.get_modpath("mobs_npc") ~= nil then
