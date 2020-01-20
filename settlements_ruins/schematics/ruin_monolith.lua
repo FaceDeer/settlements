@@ -16,8 +16,8 @@ local n15 = { name = "stairs:stair_outer_cobble", param2 = 3 }
 local n16 = { name = "stairs:slab_cobble", param2 = 4 }
 local n17 = { name = "default:cobble" }
 
-if minetest.registered_items["commoditymarket:under_market"] then
-	n17 = { name = "commoditymarket:under_market", prob = 64}
+if minetest.get_modpath("commoditymarket_fantasy") and minetest.registered_items["commoditymarket_fantasy:under_market"] then
+	n17 = { name = "commoditymarket_fantasy:under_market", prob = 64}
 end
 
 return {

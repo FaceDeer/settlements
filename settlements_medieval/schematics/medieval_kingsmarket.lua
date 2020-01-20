@@ -48,8 +48,8 @@ local n48 = { name = "stairs:stair_inner_wood", param2 = 2 }
 local n49 = { name = "stairs:stair_inner_wood", param2 = 3 }
 local n50 = { name = "stairs:slab_wood", param2 = 3 }
 
-if minetest.get_modpath("commoditymarket") and minetest.registered_items["commoditymarket:kings_market"] then
-	n43 = { name = "commoditymarket:kings_market", param2 = 1 }
+if minetest.get_modpath("commoditymarket_fantasy") and minetest.registered_items["commoditymarket_fantasy:kings_market"] then
+	n43 = { name = "commoditymarket_fantasy:kings_market", param2 = 1 }
 end
 
 if not minetest.get_modpath("vessels") then

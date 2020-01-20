@@ -38,12 +38,12 @@ local n37 = { name = "stairs:stair_desert_sandstone_brick", param2 = 14 }
 local n38 = { name = "stairs:stair_desert_sandstone_brick", param2 = 2 }
 local n39 = { name = "stairs:slab_desert_sandstone_brick", param2 = 6 }
 
-if minetest.get_modpath("commoditymarket") then
-	if minetest.registered_items["commoditymarket:kings_market"] then
-		n30 = { name = "commoditymarket:kings_market", param2 = 0 }
+if minetest.get_modpath("commoditymarket_fantasy") then
+	if minetest.registered_items["commoditymarket_fantasy:kings_market"] then
+		n30 = { name = "commoditymarket_fantasy:kings_market", param2 = 0 }
 	end
-	if minetest.registered_items["commoditymarket:night_market"] then
-		n18 = { name = "commoditymarket:night_market", param2 = 2 }
+	if minetest.registered_items["commoditymarket_fantasy:night_market"] then
+		n18 = { name = "commoditymarket_fantasy:night_market", param2 = 2 }
 	end
 end
 
