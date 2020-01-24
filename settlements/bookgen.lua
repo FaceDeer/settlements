@@ -40,9 +40,9 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 minetest.register_abm({
 	label = "Settlement book authoring",
 	nodenames = {"default:bookshelf"},
-	interval = 86400, -- daily
+	interval = 86400/2, -- twice daily
 	-- Operation interval in seconds
-	chance = 2,
+	chance = 1,
 	-- Chance of triggering `action` per-node per-interval is 1.0 / this value
 	catch_up = true,
 	-- If true, catch-up behaviour is enabled: The `chance` value is

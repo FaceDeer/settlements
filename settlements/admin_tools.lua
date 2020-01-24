@@ -102,3 +102,61 @@ minetest.register_craftitem("settlements:single_building_tool", {
 		end
 	end,
 })
+
+minetest.register_craftitem("settlements:mark_location_tool", {
+	description = S("Settlements tool for marking: @1", S("Unset")),
+	inventory_image = "settlements_location_marker.png",
+	stack_max = 1,
+	
+	on_place = function(itemstack, placer, pointed_thing)
+		local meta = itemstack:get_meta()
+		local settlement_type = meta:get_string("type")
+		
+		if settlement_type == "" then
+			settlement_type = next(settlements.registered_settlements)
+		else
+			settlement_type = next(settlements.registered_settlements, settlement_type)
+			if not settlement_type then
+				settlement_type = next(settlements.registered_settlements)
+			end
+		end
+
+		meta:set_string("type", settlement_type)
+		local desc_string = S("Settlements tool for marking: @1", settlement_type)
+		meta:set_string("description", desc_string)
+		minetest.chat_send_player(placer:get_player_name(), desc_string)
+		return itemstack
+	end,
+	
+	-- Mark a settlement here, regardless of environment
+	on_use = function(itemstack, placer, pointed_thing)
+		if not minetest.check_player_privs(placer, "server") then
+			minetest.chat_send_player(placer:get_player_name(), S("You need the server privilege to use this tool."))
+			return
+		end
+		
+		local meta = itemstack:get_meta()
+		local settlement_type = meta:get_string("type")
+		local settlement_def = settlements.registered_settlements[settlement_type]
+		if not settlement_def then
+			return
+		end
+
+		local center_surface = pointed_thing.under
+		if center_surface then
+			local existing_area = settlements.settlements_in_world:get_areas_for_pos(center_surface, true, true)
+			if next(existing_area) then
+				minetest.chat_send_player(placer:get_player_name(), S("There's already a settlement at @1", minetest.pos_to_string(center_surface)))
+				return
+			end
+		
+			local name = settlement_def.generate_name(center_surface)
+			minetest.chat_send_player(placer:get_player_name(), S("Marked settlement @1 at @2", name, minetest.pos_to_string(center_surface)))
+			-- add settlement to list
+			settlements.settlements_in_world:insert_area(center_surface, center_surface,
+				minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_type}))
+			-- save list to file
+			settlements.settlements_save()
+		end
+	end,
+})
