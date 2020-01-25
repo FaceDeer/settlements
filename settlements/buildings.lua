@@ -1,3 +1,5 @@
+local S = settlements.S
+
 local c_air = minetest.get_content_id("air")
 
 local default_path_material = "default:gravel"
@@ -5,6 +7,22 @@ local default_deep_platform = "default:stone"
 local default_shallow_platform = "default:dirt"
 
 local surface_mats = settlements.surface_materials
+
+-- TODO ability to disable hud display entirely
+--if nd minetest.settings:get_bool("settlements_show_in_hud", true) then
+local requires_mapping_kit
+if minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
+	and minetest.registered_items["map:mapping_kit"] then
+	requires_mapping_kit = "map:mapping_kit"
+end
+named_waypoints.register_named_waypoints("settlements", {
+	default_name = S("a settlement"),
+	default_color = 0xFFFFFF,
+	visibility_requires_item = requires_mapping_kit,
+	visibility_volume_radius = tonumber(minetest.settings:get("settlements_visibility_range")) or 600,
+	discovery_volume_radius = tonumber(minetest.settings:get("settlements_discovery_range")) or 30,
+	on_discovery = named_waypoints.default_discovery_popup
+})
 
 -- function to fill empty space below baseplate when building on a hill
 local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
@@ -396,11 +414,8 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	--settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
 
 	if not existing_settlement_name then
-		-- add settlement to list
-		settlements.settlements_in_world:insert_area(center_surface_pos, center_surface_pos,
-			minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_def.name}))
-		-- save list to file
-		settlements.settlements_save()
+		local waypoint_pos = vector.add(center_surface_pos, {x=0,y=2,z=0})
+		named_waypoints.add_waypoint("settlements", waypoint_pos, {name=name, settlement_type=settlement_def.name})
 	end
 
 	return settlement_info

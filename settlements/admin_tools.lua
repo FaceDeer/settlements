@@ -144,7 +144,8 @@ minetest.register_craftitem("settlements:mark_location_tool", {
 
 		local center_surface = pointed_thing.under
 		if center_surface then
-			local existing_area = settlements.settlements_in_world:get_areas_for_pos(center_surface, true, true)
+			center_surface = vector.add(center_surface, {x=0, y=2, z=0})
+			local existing_area = named_waypoints.get_waypoints_in_area("settlements", vector.subtract(center_surface, 5), vector.add(center_surface, 5))
 			if next(existing_area) then
 				minetest.chat_send_player(placer:get_player_name(), S("There's already a settlement at @1", minetest.pos_to_string(center_surface)))
 				return
@@ -153,10 +154,7 @@ minetest.register_craftitem("settlements:mark_location_tool", {
 			local name = settlement_def.generate_name(center_surface)
 			minetest.chat_send_player(placer:get_player_name(), S("Marked settlement @1 at @2", name, minetest.pos_to_string(center_surface)))
 			-- add settlement to list
-			settlements.settlements_in_world:insert_area(center_surface, center_surface,
-				minetest.serialize({name=name, discovered_by = {}, settlement_type = settlement_type}))
-			-- save list to file
-			settlements.settlements_save()
+			named_waypoints.add_waypoint("settlements", center_surface, {name=name, settlement_type = settlement_type})
 		end
 	end,
 })

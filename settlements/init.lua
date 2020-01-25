@@ -15,9 +15,7 @@ settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_m
 -- maximum allowed difference in height for building a settlement
 local max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
 
-dofile(modpath.."/persistence.lua")
 dofile(modpath.."/buildings.lua")
-dofile(modpath.."/hud.lua")
 dofile(modpath.."/bookgen.lua")
 dofile(modpath.."/admin_commands.lua")
 dofile(modpath.."/admin_tools.lua")
@@ -51,11 +49,11 @@ local function check_distance_other_settlements(center_new_chunk)
 	local max_edge = vector.add(center_new_chunk, settlements.min_dist_settlements)
 
 	-- This gets all neighbors within a cube-shaped volume
-	local neighbors = settlements.settlements_in_world:get_areas_in_area(min_edge, max_edge, true, true)
+	local neighbors = named_waypoints.get_waypoints_in_area("settlements", min_edge, max_edge)
 
 	-- Search through those to find any that are within a spherical volume
 	for i, settlement in pairs(neighbors) do
-		local distance = vector.distance(center_new_chunk, settlement.min)
+		local distance = vector.distance(center_new_chunk, settlement.pos)
 		if distance < settlements.min_dist_settlements then
 			return false
 		end
@@ -108,7 +106,7 @@ minetest.register_on_generated(function(minp, maxp)
 		return
 	end
 
-	local existing_settlements = settlements.settlements_in_world:get_areas_in_area(minp, maxp, true, false, true)
+	local existing_settlements = named_waypoints.get_waypoints_in_area("settlements", minp, maxp)
 	local id, data = next(existing_settlements)
 	if id ~= nil then
 		-- There's already a settlement in this chunk despite us being in mapgen.
@@ -116,7 +114,7 @@ minetest.register_on_generated(function(minp, maxp)
 		-- any further checks and try building a settlement here.
 		local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 		local va = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
-		data = minetest.deserialize(data.data)
+		data = data.data
 		settlements.generate_settlement_vm(vm, va, minp, maxp, data.name)
 		return
 	end
