@@ -40,7 +40,7 @@ end
 
 minetest.register_chatcommand("settlements_discover_all", {
 	description = S("Set all settlements as known"),
-	param = S("player_name, or nothing for yourself"),
+	params = S("player_name, or nothing for yourself"),
 	privs = {["server"]=true},
 	func = function(name, param)
 		if param ~= "" then
@@ -52,7 +52,7 @@ minetest.register_chatcommand("settlements_discover_all", {
 
 minetest.register_chatcommand("settlements_undiscover_all", {
 	description = S("Set all settlements as unknown to you or another player"),
-	param = S("player_name, or nothing for yourself"),
+	params = S("player_name, or nothing for yourself"),
 	privs = {["server"]=true},
 	func = function(name, param)
 		if param ~= "" then
@@ -87,7 +87,7 @@ end
 
 minetest.register_chatcommand("settlements_rename_nearest", {
 	description = S("Change the name of the nearest settlement within visible range"),
-	param = S("The new name for this settlement, or nothing to generate a new random name"),
+	params = S("The new name for this settlement, or nothing to generate a new random name"),
 	privs = {["server"]=true},
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -121,7 +121,7 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 
 minetest.register_chatcommand("settlements_regenerate_names", {
 	description = S("Regenerate the names for all settments of a particular type"),
-	param = S("The settlement type"),
+	params = S("The settlement type"),
 	privs = {["server"]=true},
 	func = function(name, param)
 		if param == "" then
@@ -155,7 +155,7 @@ minetest.register_chatcommand("settlements_regenerate_names", {
 
 minetest.register_chatcommand("settlements_remove_nearest", {
 	description = S("Remove the nearest settlement within a certain range (default 40)"),
-	param = S("range"),
+	params = S("range"),
 	privs = {["server"] = true},
 	func = function(name, param)
 		local range = tonumber(param) or 40
