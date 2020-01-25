@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-16 21:06-0700\n"
+"POT-Creation-Date: 2020-01-25 00:50-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,118 +17,113 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin_commands.lua:8
-msgid "List the settlements you know about"
+#: admin_commands.lua:25
+msgid "Change the name of the nearest settlement you can see"
 msgstr ""
 
-#: admin_commands.lua:23
-msgid "@1 is located @2m away at @3"
-msgstr ""
-
-#: admin_commands.lua:43
-msgid "Set all settlements as known"
-msgstr ""
-
-#: admin_commands.lua:44
-#: admin_commands.lua:56
-msgid "player_name, or nothing for yourself"
-msgstr ""
-
-#: admin_commands.lua:55
-msgid "Set all settlements as unknown to you or another player"
-msgstr ""
-
-#: admin_commands.lua:90
-msgid "Change the name of the nearest settlement within visible range"
-msgstr ""
-
-#: admin_commands.lua:91
+#: admin_commands.lua:26
 msgid ""
 "The new name for this settlement, or nothing to generate a new random name"
 msgstr ""
 
-#: admin_commands.lua:103
+#: admin_commands.lua:42
 msgid "Missing settlement definition for @1"
 msgstr ""
 
-#: admin_commands.lua:114
-msgid "Settlement successfully renamed from @1 to @2."
+#: admin_commands.lua:50
+msgid "Renamed @1 to @2."
 msgstr ""
 
-#: admin_commands.lua:119
-#: admin_commands.lua:180
+#: admin_commands.lua:55
+#: admin_commands.lua:107
 msgid "No known settlements within @1m found."
 msgstr ""
 
-#: admin_commands.lua:124
+#: admin_commands.lua:60
 msgid "Regenerate the names for all settments of a particular type"
 msgstr ""
 
-#: admin_commands.lua:125
+#: admin_commands.lua:61
 msgid "The settlement type"
 msgstr ""
 
-#: admin_commands.lua:129
+#: admin_commands.lua:65
 msgid "A non-empty settlement type parameter is required"
 msgstr ""
 
-#: admin_commands.lua:134
+#: admin_commands.lua:70
 msgid "Unrecognized settlement type"
 msgstr ""
 
-#: admin_commands.lua:146
+#: admin_commands.lua:83
 msgid "Renamed @1 to @2"
 msgstr ""
 
-#: admin_commands.lua:158
+#: admin_commands.lua:92
 msgid "Remove the nearest settlement within a certain range (default 40)"
 msgstr ""
 
-#: admin_commands.lua:159
+#: admin_commands.lua:93
 msgid "range"
 msgstr ""
 
-#: admin_commands.lua:172
+#: admin_commands.lua:104
 msgid "Settlement @1 successfully removed."
 msgstr ""
 
-#: admin_commands.lua:176
-msgid "Error removing settlement @1."
-msgstr ""
-
-#: admin_commands.lua:188
+#: admin_commands.lua:116
 msgid "Create a new settlement centered in your current mapchunk"
 msgstr ""
 
-#: admin_commands.lua:202
+#: admin_commands.lua:130
 msgid "Settlement already exists in this mapchunk"
 msgstr ""
 
-#: admin_commands.lua:206
-#: admin_tools.lua:27
+#: admin_commands.lua:134
+#: admin_tools.lua:28
 msgid "Created new settlement at @1"
 msgstr ""
 
-#: admin_commands.lua:208
-#: admin_tools.lua:29
+#: admin_commands.lua:136
+#: admin_tools.lua:30
 msgid "Unable to create new settlement at @1"
 msgstr ""
 
-#: admin_tools.lua:12
+#: admin_tools.lua:11
 msgid "Settlements build tool"
 msgstr ""
 
-#: admin_tools.lua:18
-#: admin_tools.lua:60
+#: admin_tools.lua:19
+#: admin_tools.lua:75
+#: admin_tools.lua:134
 msgid "You need the server privilege to use this tool."
 msgstr ""
 
-#: admin_tools.lua:55
-msgid "Settlements single building tool"
+#: admin_tools.lua:51
+#: admin_tools.lua:107
+msgid "Unset"
 msgstr ""
 
-#: admin_tools.lua:79
+#: admin_tools.lua:51
+#: admin_tools.lua:66
+msgid "Settlements tool for building: @1"
+msgstr ""
+
+#: admin_tools.lua:100
 msgid "Built @1"
+msgstr ""
+
+#: admin_tools.lua:107
+#: admin_tools.lua:125
+msgid "Settlements tool for marking: @1"
+msgstr ""
+
+#: admin_tools.lua:150
+msgid "There's already a settlement at @1"
+msgstr ""
+
+#: admin_tools.lua:155
+msgid "Marked settlement @1 at @2"
 msgstr ""
 
 #: bookgen.lua:26
@@ -156,107 +151,99 @@ msgstr ""
 msgid "@1's market clerk"
 msgstr ""
 
-#: bookgen.lua:198
-#: bookgen.lua:214
+#: bookgen.lua:196
+#: bookgen.lua:212
 msgid "west"
 msgstr ""
 
-#: bookgen.lua:199
+#: bookgen.lua:197
 msgid "west-southwest"
 msgstr ""
 
-#: bookgen.lua:200
+#: bookgen.lua:198
 msgid "southwest"
 msgstr ""
 
-#: bookgen.lua:201
+#: bookgen.lua:199
 msgid "south-southwest"
 msgstr ""
 
-#: bookgen.lua:202
+#: bookgen.lua:200
 msgid "south"
 msgstr ""
 
-#: bookgen.lua:203
+#: bookgen.lua:201
 msgid "south-southeast"
 msgstr ""
 
-#: bookgen.lua:204
+#: bookgen.lua:202
 msgid "southeast"
 msgstr ""
 
-#: bookgen.lua:205
+#: bookgen.lua:203
 msgid "east-southeast"
 msgstr ""
 
-#: bookgen.lua:206
+#: bookgen.lua:204
 msgid "east"
 msgstr ""
 
-#: bookgen.lua:207
+#: bookgen.lua:205
 msgid "east-northeast"
 msgstr ""
 
-#: bookgen.lua:208
+#: bookgen.lua:206
 msgid "northeast"
 msgstr ""
 
-#: bookgen.lua:209
+#: bookgen.lua:207
 msgid "north-northeast"
 msgstr ""
 
-#: bookgen.lua:210
+#: bookgen.lua:208
 msgid "north"
 msgstr ""
 
-#: bookgen.lua:211
+#: bookgen.lua:209
 msgid "north-northwest"
 msgstr ""
 
-#: bookgen.lua:212
+#: bookgen.lua:210
 msgid "northwest"
 msgstr ""
 
-#: bookgen.lua:213
+#: bookgen.lua:211
 msgid "west-northwest"
 msgstr ""
 
-#: bookgen.lua:228
+#: bookgen.lua:226
 msgid "highlands"
 msgstr ""
 
-#: bookgen.lua:230
+#: bookgen.lua:228
 msgid "midlands"
 msgstr ""
 
-#: bookgen.lua:232
+#: bookgen.lua:230
 msgid "lowlands"
 msgstr ""
 
-#: bookgen.lua:235
+#: bookgen.lua:233
 msgid "waters"
 msgstr ""
 
-#: bookgen.lua:247
+#: bookgen.lua:245
 msgid "A travel guide to @1"
 msgstr ""
 
-#: bookgen.lua:248
+#: bookgen.lua:246
 msgid "a resident of @1"
 msgstr ""
 
-#: bookgen.lua:255
+#: bookgen.lua:253
 msgid "In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5."
 msgstr ""
 
-#: hud.lua:114
-msgid "You've discovered @1!"
-msgstr ""
-
-#: hud.lua:117
-msgid "OK"
-msgstr ""
-
-#: persistence.lua:20
-msgid "Town"
+#: buildings.lua:19
+msgid "a settlement"
 msgstr ""

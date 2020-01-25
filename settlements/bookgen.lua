@@ -40,9 +40,9 @@ local half_map_chunk_size = settlements.half_map_chunk_size
 minetest.register_abm({
 	label = "Settlement book authoring",
 	nodenames = {"default:bookshelf"},
-	interval = 86400/2, -- twice daily
+	interval = 900, -- once per quarter hour
 	-- Operation interval in seconds
-	chance = 1,
+	chance = 100,
 	-- Chance of triggering `action` per-node per-interval is 1.0 / this value
 	catch_up = true,
 	-- If true, catch-up behaviour is enabled: The `chance` value is
@@ -67,7 +67,7 @@ minetest.register_abm({
 		for _, settlement in pairs(settlement_list) do
 			local target_pos = settlement.pos
 			if not closest_settlement or vector.distance(pos, target_pos) < vector.distance(pos, closest_settlement.pos) then
-				closest_settlement = {pos = target_pos, data = settlement.data}
+				closest_settlement = settlement
 			end
 		end
 
@@ -76,7 +76,7 @@ minetest.register_abm({
 		end
 
 		-- Get the settlement def and, if it generate books, generate one
-		local data = minetest.deserialize(closest_settlement.data)
+		local data = closest_settlement.data
 		local town_name = data.name
 		local town_type = data.settlement_type
 		local town_def = settlements.registered_settlements[town_type]
