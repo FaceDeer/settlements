@@ -48,7 +48,6 @@ minetest.register_chatcommand("settlements_rename_nearest", {
 			data.name = param
 			named_waypoints.update_waypoint("settlements", settlement.pos, data)
 			minetest.chat_send_player(name, S("Renamed @1 to @2.", oldname, param))
-			named_waypoints.reset_hud_markers("settlements")
 			return
 		end
 
@@ -84,7 +83,6 @@ minetest.register_chatcommand("settlements_regenerate_names", {
 				minetest.log("action", "[settlements] Renamed " .. oldname .. " to " .. data.name)
 			end
 		end
-		named_waypoints.reset_hud_markers("settlements")
 	end,
 })
 
@@ -102,7 +100,6 @@ minetest.register_chatcommand("settlements_remove_nearest", {
 			named_waypoints.remove_waypoint("settlements", settlement.pos)
 			minetest.log("action", "[settlements] Removed " .. settlement.data.name)
 			minetest.chat_send_player(name, S("Settlement @1 successfully removed.", settlement.data.name))
-			named_waypoints.reset_hud_markers("settlements")
 		else
 			minetest.chat_send_player(name, S("No known settlements within @1m found.", range))
 		end
