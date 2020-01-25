@@ -8,21 +8,42 @@ local default_shallow_platform = "default:dirt"
 
 local surface_mats = settlements.surface_materials
 
--- TODO ability to disable hud display entirely
---if nd minetest.settings:get_bool("settlements_show_in_hud", true) then
-local requires_mapping_kit
-if minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
-	and minetest.registered_items["map:mapping_kit"] then
-	requires_mapping_kit = "map:mapping_kit"
-end
-named_waypoints.register_named_waypoints("settlements", {
+local settlement_waypoint_def = {
 	default_name = S("a settlement"),
 	default_color = 0xFFFFFF,
-	visibility_requires_item = requires_mapping_kit,
-	visibility_volume_radius = tonumber(minetest.settings:get("settlements_visibility_range")) or 600,
 	discovery_volume_radius = tonumber(minetest.settings:get("settlements_discovery_range")) or 30,
-	on_discovery = named_waypoints.default_discovery_popup
-})
+}
+if minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
+	and minetest.registered_items["map:mapping_kit"] then
+	settlement_waypoint_def.visibility_requires_item = "map:mapping_kit"
+end
+if minetest.settings:get_bool("settlements_show_in_hud", true) then
+	settlement_waypoint_def.visibility_volume_radius = tonumber(minetest.settings:get("settlements_visibility_range")) or 600
+	settlement_waypoint_def.on_discovery = named_waypoints.default_discovery_popup
+end
+named_waypoints.register_named_waypoints("settlements", settlement_waypoint_def)
+
+local buildable_to_set
+local buildable_to = function(c_node)
+	if buildable_to_set then return buildable_to_set[c_node] end
+	buildable_to_set = {}
+	for k, v in pairs(minetest.registered_nodes) do
+		if v.buildable_to then
+			buildable_to_set[minetest.get_content_id(k)] = true
+		end
+	end
+
+	-- TODO: some way to discriminate between registered_settlements? For now, apply ignore_materials universally.
+	for _, def in pairs(settlements.registered_settlements) do
+		if def.ignore_surface_materials then
+			for _, ignore_material in ipairs(def.ignore_surface_materials) do
+				buildable_to_set[minetest.get_content_id(ignore_material)] = true
+			end
+		end
+	end
+
+	return buildable_to_set[c_node]
+end
 
 -- function to fill empty space below baseplate when building on a hill
 local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelsteinkircherl, Brannenburg
@@ -30,11 +51,13 @@ local function ground(pos, data, va, c_shallow, c_deep) -- role model: Wendelste
 	local cnt = 0
 	local mat = c_shallow
 	p2.y = p2.y-1
+	local depth =  math.random(2,4)
 	while true do
 		cnt = cnt+1
 		if cnt > 20 then break end
-		if cnt > math.random(2,4) then mat = c_deep end
+		if cnt > depth then mat = c_deep end
 		local vi = va:index(p2.x, p2.y, p2.z)
+		if not buildable_to(data[vi]) then break end -- stop when we hit solid ground
 		data[vi] = mat
 		p2.y = p2.y-1
 	end
@@ -132,29 +155,6 @@ local function terraform(data, va, settlement_info)
 		end
 	end
 end
-
-local buildable_to_set
-local buildable_to = function(c_node)
-	if buildable_to_set then return buildable_to_set[c_node] end
-	buildable_to_set = {}
-	for k, v in pairs(minetest.registered_nodes) do
-		if v.buildable_to then
-			buildable_to_set[minetest.get_content_id(k)] = true
-		end
-	end
-
-	-- TODO: some way to discriminate between registered_settlements? For now, apply ignore_materials universally.
-	for _, def in pairs(settlements.registered_settlements) do
-		if def.ignore_surface_materials then
-			for _, ignore_material in ipairs(def.ignore_surface_materials) do
-				buildable_to_set[minetest.get_content_id(ignore_material)] = true
-			end
-		end
-	end
-
-	return buildable_to_set[c_node]
-end
-
 
 -------------------------------------------------------------------------------
 -- function to find surface block y coordinate
