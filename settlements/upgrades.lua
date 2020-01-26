@@ -15,7 +15,7 @@ local function upgrade(settlement_list)
 		local pos = data.min
 		local dat = minetest.deserialize(data.data)
 		if not dat.name then
-			dat.settlement_type == dat.settlement_type or "medieval"
+			dat.settlement_type = dat.settlement_type or "medieval"
 			if medieval_def then
 				dat.name = medieval_def.generate_name(pos)
 			end
@@ -40,8 +40,8 @@ if not v3file then -- if the v3 file exists, no upgrade should be done
 			minetest.log("action", "[settlements] found v1 settlements file but no v2 or v3 settlements file, upgrading")
 			local settlements = minetest.deserialize(v1file:read("*all"))
 			local v1settlements = {}
-			for _, pos in ipairs(settlements)
-				table.insert(v1settlements, {min = pos, data = minetest.serialize({}))
+			for _, pos in ipairs(settlements) do
+				table.insert(v1settlements, {min = pos, data = minetest.serialize({})})
 			end
 			minetest.after(5, upgrade, v1settlements)			
 		end
