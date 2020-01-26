@@ -15,6 +15,7 @@ settlements.min_dist_settlements = tonumber(minetest.settings:get("settlements_m
 -- maximum allowed difference in height for building a settlement
 local max_height_difference = tonumber(minetest.settings:get("settlements_maximum_height_difference")) or 10
 
+dofile(modpath.."/upgrades.lua")
 dofile(modpath.."/buildings.lua")
 dofile(modpath.."/bookgen.lua")
 dofile(modpath.."/admin_commands.lua")
