@@ -406,7 +406,7 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 		end
 	end
 
-	if number_built == 1 then
+	if number_built <= 1 then
 		return nil
 	end
 
