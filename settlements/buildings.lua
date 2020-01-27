@@ -291,9 +291,6 @@ local function select_replacements(source)
 	return destination
 end
 
---local building_counts = {}
---local settlement_sizes = {}
-
 -------------------------------------------------------------------------------
 -- fill settlement_info with LVM
 --------------------------------------------------------------------------------
@@ -346,7 +343,6 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 	settlement_info.replacements = select_replacements(settlement_def.replacements)
 	settlement_info.replacements_optional = select_replacements(settlement_def.replacements_optional)
 
-	-- debugging variable
 	local count_buildings = {}
 
 	-- first building is selected from the central_schematics list, or randomly from schematics if that isn't defined.
@@ -369,8 +365,6 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 
 	insert_into_area(center_building, areastore)
 
-	-- debugging variable
-	--building_counts[townhall.name] = (building_counts[townhall.name] or 0) + 1
 	-- now some buildings around in a circle, radius = size of town center
 	local x, z = center_surface_pos.x, center_surface_pos.z
 	local r = math.max(townhall.schematic.size.x, townhall.schematic.size.z) + (townhall.buffer or 0)
@@ -410,9 +404,6 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 		return nil
 	end
 
-	-- debugging variable
-	--settlement_sizes[number_built] = (settlement_sizes[number_built] or 0) + 1
-
 	if not existing_settlement_name then
 		local waypoint_pos = vector.add(center_surface_pos, {x=0,y=2,z=0})
 		named_waypoints.add_waypoint("settlements", waypoint_pos, {name=name, settlement_type=settlement_def.name})
@@ -420,11 +411,6 @@ local function create_site_plan(minp, maxp, data, va, existing_settlement_name)
 
 	return settlement_info
 end
-
---minetest.register_on_shutdown(function()
---	minetest.debug(dump(building_counts))
---	minetest.debug(dump(settlement_sizes))
---end)
 
 local function initialize_nodes(settlement_info)
 	for i, built_house in ipairs(settlement_info) do
@@ -601,16 +587,17 @@ settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settl
 		return false
 	end
 
-	-- evaluate settlement_info and prepare terrain
+	-- prepare terrain
 	terraform(data, va, settlement_info)
 
-	-- evaluate settlement_info and build paths between buildings
+	--build paths between buildings
 	if settlement_info.def.path_material then
 		paths(data, va, settlement_info)
 	end
 
-	-- evaluate settlement_info and place schematics
 	vm:set_data(data)
+	
+	-- place schematics
 	for _, built_house in ipairs(settlement_info) do
 		settlements.place_building(vm, built_house, settlement_info)
 	end
