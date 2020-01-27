@@ -588,8 +588,11 @@ local trigger_timer_for_group = function(minp, maxp, nodenames)
 	end
 end
 
-local data = {} -- for better memory management, use externally-allocated buffer
 settlements.generate_settlement_vm = function(vm, va, minp, maxp, existing_settlement_name)
+	local data = {} -- normally this buffer would be outside the method to avoid
+		-- garbage collecting it between calls and overwhelming LUA's memory management.
+		-- But settlements should only need to generate on rare occasions so let's try letting
+		-- LUA garbage-collect it to free up the memory in between times.
 	vm:get_data(data)
 
 	local settlement_info = create_site_plan(minp, maxp, data, va, existing_settlement_name)
