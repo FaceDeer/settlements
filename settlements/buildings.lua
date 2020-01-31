@@ -13,9 +13,12 @@ local settlement_waypoint_def = {
 	default_color = 0xFFFFFF,
 	discovery_volume_radius = tonumber(minetest.settings:get("settlements_discovery_range")) or 30,
 }
-if minetest.settings:get_bool("settlements_hud_requires_mapping_kit", true)
-	and minetest.registered_items["map:mapping_kit"] then
-	settlement_waypoint_def.visibility_requires_item = "map:mapping_kit"
+if minetest.settings:get_bool("settlements_hud_requires_item", true) then
+	local item_required = minetest.settings:get("settlements_hud_item_required")
+	if item_required == nil or item_required == "" then
+		item_required = "map:mapping_kit"
+	end	
+	settlement_waypoint_def.visibility_requires_item = item_required
 end
 if minetest.settings:get_bool("settlements_show_in_hud", true) then
 	settlement_waypoint_def.visibility_volume_radius = tonumber(minetest.settings:get("settlements_visibility_range")) or 600
