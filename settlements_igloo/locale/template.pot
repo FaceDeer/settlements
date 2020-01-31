@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-16 18:39-0700\n"
+"POT-Creation-Date: 2020-01-31 01:31-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: settlements_igloo\init.lua:41
+#: settlements_igloo\init.lua:37
+msgid "cluster of igloos"
+msgstr ""
+
+#: settlements_igloo\init.lua:66
 msgid "Inuit camp"
 msgstr ""

@@ -6,6 +6,7 @@ local S, NS = settlements.S, settlements.NS
 local schem_path = modpath.."/schematics/"
 
 local ruin_settlements = {
+	description = S("ruins"),
 	surface_materials = {
 		"default:permafrost",
 		"default:permafrost_with_stones",

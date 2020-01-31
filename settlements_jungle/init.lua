@@ -42,6 +42,7 @@ local jungle_hut_complex = {
 }
 
 local jungle_settlements = {
+	description = S("jungle settlement"),
 	surface_materials = {
 		"default:dirt_with_rainforest_litter",
 	},

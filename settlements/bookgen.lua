@@ -36,14 +36,17 @@ end
 ----------------------------------------------------------------------------------------------------------------
 
 local half_map_chunk_size = settlements.half_map_chunk_size
+local bookshelf_def = minetest.registered_items["default:bookshelf"]
+local bookshelf_on_construct
+if bookshelf_def then
+	bookshelf_on_construct = bookshelf_def.on_construct
+end
 
 minetest.register_abm({
 	label = "Settlement book authoring",
 	nodenames = {"default:bookshelf"},
-	interval = 900, -- once per quarter hour
-	-- Operation interval in seconds
-	chance = 100,
-	-- Chance of triggering `action` per-node per-interval is 1.0 / this value
+	interval = 60, -- Operation interval in seconds
+	chance = 1440, -- Chance of triggering `action` per-node per-interval is 1.0 / this value
 	catch_up = true,
 	-- If true, catch-up behaviour is enabled: The `chance` value is
 	-- temporarily reduced when returning to an area to simulate time lost
@@ -84,6 +87,7 @@ minetest.register_abm({
 			local book = town_def.generate_book(closest_settlement.pos, town_name)
 			if book then
 				inv:add_item("books", book)
+				bookshelf_on_construct(pos) -- this should safely update the bookshelf's infotext without disturbing its contents
 			end
 		end
 	end,
@@ -241,6 +245,14 @@ settlements.generate_travel_guide = function(source_pos, source_name)
 		return
 	end
 	local target_name = target.data.name
+	local target_type = target.data.settlement_type
+	local target_desc = S("settlement")
+	if target_type then
+		local def = settlements.registered_settlements[target_type]
+		if def and def.description then
+			target_desc = def.description
+		end
+	end
 
 	local title = S("A travel guide to @1", target_name)
 	local author = S("a resident of @1", source_name)
@@ -250,6 +262,6 @@ settlements.generate_travel_guide = function(source_pos, source_name)
 	local kilometers = string.format("%.1f", distance/1000)
 	local altitude = get_altitude(target.pos)
 
-	local text = S("In the @1 @2 kilometers to the @3 of @4 lies the settlement of @5.", altitude, kilometers, dir, source_name, target_name)
+	local text = S("In the @1 @2 kilometers to the @3 of @4 lies the @5 of @6.", altitude, kilometers, dir, source_name, target_desc, target_name)
 	return generate_book(title, author, text)
 end

@@ -15,6 +15,8 @@ local coralpalace = {
 
 
 local mer_settlements = {
+	description = S("coral village"),
+
 	surface_materials = {
 		"default:sand",
 		"default:dirt",

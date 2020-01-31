@@ -75,6 +75,8 @@ local desert_hut = {
 }
 
 local desert_settlements = {
+	description = S("desert village"),
+
 	surface_materials = {
 		"default:desert_sand",
 	},

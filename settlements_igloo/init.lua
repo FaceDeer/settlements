@@ -34,6 +34,7 @@ local initialize_node = function(pos, node, node_def, settlement_info)
 end
 
 local inuit_settlements = {
+	description = S("cluster of igloos"),
 	surface_materials = {
 		"default:snowblock",
 	},

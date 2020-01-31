@@ -172,6 +172,8 @@ local schematic_table = {
 }
 
 local medieval_settlements = {
+	description = S("village"), -- a general name for this kind of settlement
+
 	-- this settlement will be placed on nodes with this surface material type.
 	surface_materials = {
 		"default:dirt",
