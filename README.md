@@ -1,5 +1,10 @@
 This mod adds settlements on world generation. The settlements consist of a cluster of small buildings whose construction sites blend into the contours of the world around them and which are connected by non-rectilinear gravel paths. They are the equivalent of small hamlets or thorpes, not grand villages or towns.
 
+## Dependencies
+
+- [named_waypoints](https://github.com/FaceDeer/named_waypoints) is a required dependency.
+- [namegen](https://github.com/FaceDeer/namegen) is a recommended optional dependency.
+
 ## Types of settlements
 
 With the exception of some optional commoditymarket node support, only nodes from the default minetest_game are used by the base schematics included in this mod.
