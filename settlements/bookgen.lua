@@ -87,7 +87,9 @@ minetest.register_abm({
 			local book = town_def.generate_book(closest_settlement.pos, town_name)
 			if book then
 				inv:add_item("books", book)
-				bookshelf_on_construct(pos) -- this should safely update the bookshelf's infotext without disturbing its contents
+				if bookshelf_on_construct then
+					bookshelf_on_construct(pos) -- this should safely update the bookshelf's infotext without disturbing its contents
+				end
 			end
 		end
 	end,
