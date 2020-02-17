@@ -1,9 +1,9 @@
 settlements = {}
 
-local modpath = minetest.get_modpath(minetest.get_current_modname())
+local modname = minetest.get_current_modname()
+local modpath = minetest.get_modpath(modname)
 
--- internationalization boilerplate
-settlements.S, settlements.NS = dofile(modpath.."/intllib.lua")
+settlements.S = minetest.get_translator(modname)
 
 settlements.half_map_chunk_size = tonumber(minetest.get_mapgen_setting("chunksize")) * 16 / 2
 

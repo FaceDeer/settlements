@@ -3,8 +3,7 @@ if not (minetest.settings:get_bool("settlements_generate_books", true) and modpa
 	return
 end
 
--- internationalization boilerplate
-local S, NS = settlements.S, settlements.NS
+local S = settlements.S
 
 -- values taken from default's craftitems.lua
 local max_text_size = 10000

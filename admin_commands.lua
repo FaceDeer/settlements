@@ -1,5 +1,4 @@
--- internationalization boilerplate
-local S, NS = settlements.S, settlements.NS
+local S = settlements.S
 
 local visual_range = tonumber(minetest.settings:get("settlements_visibility_range")) or 600
 

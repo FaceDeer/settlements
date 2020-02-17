@@ -1,5 +1,4 @@
--- internationalization boilerplate
-local S, NS = settlements.S, settlements.NS
+local S = settlements.S
 
 -----------------------------------------------------------------------------
 -- Admin tools
