@@ -7,7 +7,7 @@ local S = settlements.S
 
 -- values taken from default's craftitems.lua
 local max_text_size = 10000
-local max_title_size = 80
+--local max_title_size = 80 -- truncating translated strings doesn't work well.
 local short_title_size = 35
 local lpp = 14
 
@@ -15,14 +15,9 @@ local generate_book = function(title, owner, text)
 	local book = ItemStack("default:book_written")
 	local meta = book:get_meta()
 
-	meta:set_string("title", title:sub(1, max_title_size))
+	meta:set_string("title", title)
 	meta:set_string("owner", owner)
-	local short_title = title
-	-- Don't bother trimming the title if the trailing dots would make it longer
-	if #short_title > short_title_size + 3 then
-		short_title = short_title:sub(1, short_title_size) .. "..."
-	end
-	meta:set_string("description", S("@1 by @2", short_title, owner))
+	meta:set_string("description", S("@1 by @2", title, owner))
 	text = text:sub(1, max_text_size)
 	text = text:gsub("\r\n", "\n"):gsub("\r", "\n")
 	meta:set_string("text", text)
