@@ -7,7 +7,7 @@ local v1filename = worldpath.."/settlements.txt"
 local v2filename = worldpath.."/settlements_areastore.txt"
 local v3filename = worldpath.."/named_waypoints_settlements.txt"
 
--- delayed to account for circular dependency on medieval settlement (for namegen)
+-- delayed to account for circular dependency on medieval settlement (for name_generator)
 -- and to allow settlements to be registered
 local function upgrade(settlement_list)
 	local medieval_def = settlements.registered_settlements["medieval"]
